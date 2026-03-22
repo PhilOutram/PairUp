@@ -701,6 +701,7 @@ document.getElementById('saveProfile').addEventListener('click', () => {
   maybeBootstrapInbound();
   saveState();
   updateBadges();
+  colourFilterChips();
   document.getElementById('deleteProfile').style.display = 'inline-block';
   showSaveStatus('Profile saved! Finding your matches…', 'ok');
   setTimeout(() => switchTab('matches'), 1200);
@@ -915,11 +916,57 @@ function updateBadges() {
 
 // ─── Filter UI ────────────────────────────────────────────────────────────────
 
+function colourFilterChips() {
+  if (!state.profile) return;
+  const p = state.profile;
+  const GREEN = '#E9FAE6';
+  const GREY  = '#EDEDED';
+
+  // Grade — green if same as user's grade
+  document.querySelectorAll('#filterGrade .filter-chip').forEach(chip => {
+    chip.dataset.profileBg = chip.dataset.val === p.grade ? GREEN : GREY;
+  });
+
+  // Days — green if user works that day
+  document.querySelectorAll('#filterDays .filter-chip').forEach(chip => {
+    chip.dataset.profileBg = p.days.includes(chip.dataset.val) ? GREEN : GREY;
+  });
+
+  // Location — green if matches user's location
+  document.querySelectorAll('#filterLoc .filter-chip').forEach(chip => {
+    chip.dataset.profileBg = chip.dataset.val === p.location ? GREEN : GREY;
+  });
+
+  // Style — green if matches user's style (flexible matches everything)
+  document.querySelectorAll('#filterStyle .filter-chip').forEach(chip => {
+    const matches = chip.dataset.val === p.style || p.style === 'flexible' || p.style === 'unsure';
+    chip.dataset.profileBg = matches ? GREEN : GREY;
+  });
+
+  // Score chips — neutral, no profile colouring
+  document.querySelectorAll('#filterScore .filter-chip').forEach(chip => {
+    chip.dataset.profileBg = '';
+  });
+
+  applyFilterChipColours();
+}
+
+function applyFilterChipColours() {
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    if (!chip.classList.contains('selected') && chip.dataset.profileBg) {
+      chip.style.background = chip.dataset.profileBg;
+    } else if (!chip.classList.contains('selected')) {
+      chip.style.background = '';
+    }
+  });
+}
+
 document.getElementById('filterToggleBtn').addEventListener('click', () => {
   const bar = document.getElementById('filterBar');
   const btn = document.getElementById('filterToggleBtn');
   bar.classList.toggle('open');
   btn.classList.toggle('active');
+  if (bar.classList.contains('open')) colourFilterChips();
 });
 
 document.getElementById('filterClearBtn').addEventListener('click', () => {
@@ -935,6 +982,7 @@ function setupFilterChips(containerId, onSelect) {
     chip.addEventListener('click', () => {
       onSelect(chip);
       document.getElementById('filterClearBtn').style.display = hasActiveFilters() ? 'inline' : 'none';
+      applyFilterChipColours();
       renderMatches();
     });
   });
