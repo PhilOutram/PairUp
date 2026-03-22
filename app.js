@@ -12,7 +12,7 @@ function loadState() {
 function defaultState() {
   return {
     profile: null,
-    sentRequests: [],      // ids we sent to
+    sentRequests: [],      // ids we sent  to
     receivedRequests: [],  // ids that requested us
     connections: [],       // { id, dir:'sent'|'received', ts }
     dismissed: [],

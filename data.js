@@ -257,7 +257,7 @@ const DUMMY_PROFILES = [
     id: 'p011', name: 'B. Owusu', grade: 'G7',
     roles: ['Legal Adviser', 'Risk & Compliance Manager'],
     directorates: ['Legal & Governance'],
-    days: ['Wed', 'Thu', 'Fri'],
+    days: ['Tue', 'Thu', 'Fri'],
     style: 'clean',
     location: 'London - KCS',
     overseas: ''
