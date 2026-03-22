@@ -1,6 +1,6 @@
 // ─── State ───────────────────────────────────────────────────────────────────
 
-const STATE_KEY = 'pairup_v2';
+const STATE_KEY = 'pairup_v1';
 
 function loadState() {
   try {
@@ -12,14 +12,12 @@ function loadState() {
 function defaultState() {
   return {
     profile: null,
-    sentRequests: [],      // ids we sent  to
-    receivedRequests: [],  // ids that requested us
-    connections: [],       // { id, dir:'sent'|'received', ts }
+    sentRequests: [],
+    receivedRequests: [],
+    connections: [],
     dismissed: [],
     showDismissed: false,
     newConnBanner: null,
-    pendingTimers: {},     // id -> scheduledAt timestamp (persisted so reload survives)
-    _bootstrapped: false,
   };
 }
 
@@ -29,12 +27,14 @@ function saveState() {
 
 let state = loadState();
 
-// ─── Simulated inbound bootstrap ─────────────────────────────────────────────
-
+// Simulate some inbound requests on first load if profile exists
 function maybeBootstrapInbound() {
-  if (!state.profile || state._bootstrapped) return;
+  if (!state.profile) return;
+  if (state._bootstrapped) return;
   state._bootstrapped = true;
-  ['p001', 'p009'].forEach(id => {
+  // Two dummy profiles have proactively "requested" the user
+  const inbound = ['p001', 'p009'];
+  inbound.forEach(id => {
     if (!state.receivedRequests.includes(id) &&
         !state.connections.find(c => c.id === id) &&
         !state.sentRequests.includes(id)) {
@@ -44,279 +44,229 @@ function maybeBootstrapInbound() {
   saveState();
 }
 
-// ─── Pending timer management ─────────────────────────────────────────────────
-// We store the scheduled-at time in state so timers survive page reload.
-// On init we check for any overdue pending timers and re-schedule them.
-
-function schedulePendingAccept(id) {
-  const delay = 3000 + Math.random() * 4000;
-  const scheduledAt = Date.now();
-  state.pendingTimers[id] = { scheduledAt, delay };
-  saveState();
-  setTimeout(() => resolvePending(id), delay);
-}
-
-function resolvePending(id) {
-  // Guard: only resolve if still pending
-  if (!state.sentRequests.includes(id)) return;
-  if (state.connections.find(c => c.id === id)) return;
-  delete state.pendingTimers[id];
-  state.sentRequests = state.sentRequests.filter(x => x !== id);
-  state.connections.push({ id, dir: 'sent', ts: Date.now() });
-  const p = DUMMY_PROFILES.find(x => x.id === id);
-  state.newConnBanner = p ? `${p.name} accepted your request!` : 'A new connection accepted your request!';
-  saveState();
-  updateBadges();
-  // Refresh whichever tab is visible
-  if (document.getElementById('tab-connections').classList.contains('active')) renderConnections();
-  if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
-}
-
-function rehydrateTimers() {
-  // Re-schedule any timers that were pending when the page last closed
-  const timers = state.pendingTimers || {};
-  Object.entries(timers).forEach(([id, info]) => {
-    if (!state.sentRequests.includes(id)) {
-      // Already resolved somehow, clean up
-      delete state.pendingTimers[id];
-      return;
-    }
-    const elapsed = Date.now() - info.scheduledAt;
-    const remaining = Math.max(0, info.delay - elapsed);
-    setTimeout(() => resolvePending(id), remaining);
-  });
-}
-
 // ─── Matching ────────────────────────────────────────────────────────────────
-
-const MAX_SCORE = 115;
 
 function scoreMatch(user, candidate) {
   let score = 0;
-  const breakdown = [];
+  let matched = [];
 
-  // Grade: same = 40pts, ±1 = 25, ±2 = 10
+  // Grade match: same or adjacent (±1) = 40 pts, ±2 = 20 pts
   const uIdx = GRADE_IDX[user.grade] ?? 0;
   const cIdx = GRADE_IDX[candidate.grade] ?? 0;
   const gradeDiff = Math.abs(uIdx - cIdx);
-  let gradeScore = 0;
-  if (gradeDiff === 0) gradeScore = 40;
-  else if (gradeDiff === 1) gradeScore = 25;
-  else if (gradeDiff === 2) gradeScore = 10;
-  score += gradeScore;
-  breakdown.push({
-    label: 'Grade',
-    score: gradeScore,
-    max: 40,
-    note: gradeDiff === 0 ? 'Same grade' : gradeDiff === 1 ? '1 grade apart' : gradeDiff === 2 ? '2 grades apart' : 'Very different grades'
-  });
+  if (gradeDiff === 0) { score += 40; matched.push({ label: candidate.grade, type: 'grade' }); }
+  else if (gradeDiff === 1) { score += 25; matched.push({ label: candidate.grade, type: 'grade' }); }
+  else if (gradeDiff === 2) { score += 10; }
 
-  // Role overlap: 25pts if any shared
+  // Role overlap: 25 pts per shared role, max 25
   const roleOverlap = user.roles.filter(r => candidate.roles.includes(r));
-  const roleScore = roleOverlap.length > 0 ? 25 : 0;
-  score += roleScore;
-  breakdown.push({
-    label: 'Role fit',
-    score: roleScore,
-    max: 25,
-    note: roleOverlap.length > 0 ? roleOverlap.slice(0,2).join(', ') : 'No roles in common'
-  });
+  if (roleOverlap.length > 0) {
+    score += 25;
+    roleOverlap.slice(0, 2).forEach(r => matched.push({ label: r, type: 'role' }));
+  }
 
-  // Directorate: 20pts base + 5 bonus for multiple
+  // Directorate overlap: 20 pts if any shared, +5 if multiple
   const dirOverlap = user.directorates.filter(d =>
     d === 'Open to any' || candidate.directorates.includes(d) || candidate.directorates.includes('Open to any')
   );
-  let dirScore = 0;
-  if (dirOverlap.length > 0) { dirScore = 20; if (dirOverlap.length > 1) dirScore = 25; }
-  score += dirScore;
-  const displayDirs = dirOverlap.filter(d => d !== 'Open to any');
-  breakdown.push({
-    label: 'Directorate',
-    score: dirScore,
-    max: 25,
-    note: displayDirs.length > 0 ? displayDirs.slice(0,2).join(', ') : dirOverlap.includes('Open to any') ? 'Open to any' : 'No overlap'
-  });
+  if (dirOverlap.length > 0) {
+    score += 20;
+    if (dirOverlap.length > 1) score += 5;
+    const displayDir = dirOverlap.filter(d => d !== 'Open to any').slice(0, 1);
+    displayDir.forEach(d => matched.push({ label: d, type: 'dir' }));
+  }
 
-  // Days complementarity
+  // Day complementarity: non-overlapping days = ideal for job share
   const userDays = new Set(user.days);
   const candDays = new Set(candidate.days);
-  const overlapCount = [...userDays].filter(d => candDays.has(d)).length;
-  const totalCoverage = new Set([...userDays, ...candDays]).size;
-  let dayScore = 0;
-  let dayNote = '';
-  if (overlapCount === 0 && totalCoverage >= 4) { dayScore = 15; dayNote = 'Excellent coverage'; }
-  else if (overlapCount <= 1 && totalCoverage >= 4) { dayScore = 10; dayNote = 'Good coverage'; }
-  else if (overlapCount <= 2) { dayScore = 5; dayNote = 'Partial overlap'; }
-  else { dayNote = 'Heavy day overlap'; }
-  score += dayScore;
-  breakdown.push({ label: 'Day pattern', score: dayScore, max: 15, note: dayNote });
+  const overlap = [...userDays].filter(d => candDays.has(d)).length;
+  const total = new Set([...userDays, ...candDays]).size;
+  const coverage = total / 5; // fraction of week covered between them
+  if (overlap === 0 && coverage >= 0.8) { score += 15; matched.push({ label: candidate.days.join(' '), type: 'days' }); }
+  else if (overlap <= 1 && coverage >= 0.6) { score += 10; matched.push({ label: candidate.days.join(' '), type: 'days' }); }
+  else if (overlap <= 2) { score += 5; }
 
-  // Style: 10pts same, 5pts if flexible
-  let styleScore = 0;
-  let styleNote = '';
+  // Style compatibility: same = 10, flexible = 5
   if (user.style && candidate.style) {
-    if (user.style === candidate.style) { styleScore = 10; styleNote = 'Same style'; }
-    else if (user.style === 'flexible' || candidate.style === 'flexible' || user.style === 'unsure' || candidate.style === 'unsure') {
-      styleScore = 5; styleNote = 'Flexible';
-    } else { styleNote = 'Different styles'; }
-  } else { styleNote = 'Not specified'; }
-  score += styleScore;
-  breakdown.push({ label: 'Working style', score: styleScore, max: 10, note: styleNote });
+    if (user.style === candidate.style) { score += 10; matched.push({ label: styleLabel(candidate.style), type: 'style' }); }
+    else if (user.style === 'flexible' || candidate.style === 'flexible') { score += 5; }
+  }
 
-  // Matched tags for card display
-  const matched = [];
-  if (roleOverlap.length > 0) roleOverlap.slice(0,2).forEach(r => matched.push({ label: r, type: 'role' }));
-  if (displayDirs.length > 0) matched.push({ label: displayDirs[0], type: 'dir' });
-  if (dayScore >= 10) matched.push({ label: candidate.days.join(' '), type: 'days' });
-  if (styleScore === 10) matched.push({ label: styleLabel(candidate.style), type: 'style' });
+  // Location: same location = small bonus, surfaces it as tag
+  if (user.location && candidate.location && user.location === candidate.location) {
+    matched.push({ label: locationShort(candidate.location, candidate.overseas), type: 'loc' });
+  }
 
-  return { score: Math.min(score, MAX_SCORE), breakdown, matched };
-}
-
-function scoreToPercent(score) {
-  return Math.round(Math.min((score / MAX_SCORE) * 100, 100));
-}
-
-function scoreClass(pct) {
-  if (pct >= 65) return 'score-high';
-  if (pct >= 40) return 'score-med';
-  return 'score-low';
+  return { score: Math.min(score, 115), matched };
 }
 
 function styleLabel(s) {
-  return { clean: 'Clean handover', collaborative: 'Collaborative', flexible: 'Flexible', unsure: 'Not sure yet' }[s] || s;
+  return { clean: 'Clean handover', collaborative: 'Collaborative', flexible: 'Flexible' }[s] || s;
 }
 
 function locationShort(loc, overseas) {
   if (loc === 'Overseas' && overseas) return overseas;
-  return loc || '—';
+  return loc;
 }
+
+function getMatches() {
+  if (!state.profile) return [];
+  return DUMMY_PROFILES
+    .filter(p => p.id !== 'user')
+    .map(p => ({ profile: p, ...scoreMatch(state.profile, p) }))
+    .filter(m => m.score >= 15)
+    .sort((a, b) => b.score - a.score);
+}
+
+function scoreToPercent(score) {
+  return Math.round(Math.min((score / 115) * 100, 100));
+}
+
+// ─── Avatar colours ──────────────────────────────────────────────────────────
+
+const AV_COLORS = [
+  { bg: '#E6F1FB', fg: '#0C447C' },
+  { bg: '#E1F5EE', fg: '#085041' },
+  { bg: '#FAEEDA', fg: '#633806' },
+  { bg: '#EEEDFE', fg: '#3C3489' },
+  { bg: '#FAECE7', fg: '#712B13' },
+  { bg: '#FBEAF0', fg: '#72243E' },
+  { bg: '#EAF3DE', fg: '#27500A' },
+];
+
+function avatarColor(id) {
+  let n = 0;
+  for (let i = 0; i < id.length; i++) n += id.charCodeAt(i);
+  return AV_COLORS[n % AV_COLORS.length];
+}
+
+function initials(name) {
+  return name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+}
+
+function avatarEl(profile) {
+  const c = avatarColor(profile.id);
+  const div = document.createElement('div');
+  div.className = 'avatar';
+  div.style.background = c.bg;
+  div.style.color = c.fg;
+  div.textContent = initials(profile.name);
+  return div;
+}
+
+// ─── Location tag colour ─────────────────────────────────────────────────────
 
 function locTagStyle(loc) {
   if (loc === 'London - KCS') return 'background:#EEEDFE;color:#3C3489;';
   if (loc === 'East Kilbride') return 'background:#FAEEDA;color:#633806;';
   if (loc === 'Remote') return 'background:#E1F5EE;color:#085041;';
   if (loc === 'Overseas') return 'background:#FAECE7;color:#712B13;';
-  return 'background:#f0f0ee;color:#555;';
+  return 'background:#F1EFE8;color:#444441;';
 }
 
-function getMatches() {
-  if (!state.profile) return [];
-  return DUMMY_PROFILES.map(p => ({ profile: p, ...scoreMatch(state.profile, p) }))
-    .filter(m => m.score >= 10)
-    .sort((a, b) => b.score - a.score);
-}
+// ─── Build a match card ──────────────────────────────────────────────────────
 
-// ─── Filter state ─────────────────────────────────────────────────────────────
-
-const filters = { days: [], loc: null, style: null, minScore: 0 };
-
-function applyFilters(matches) {
-  return matches.filter(m => {
-    const p = m.profile;
-    if (filters.days.length > 0 && !filters.days.every(d => p.days.includes(d))) return false;
-    if (filters.loc && p.location !== filters.loc) return false;
-    if (filters.style && p.style !== filters.style && p.style !== 'flexible' && p.style !== 'unsure') return false;
-    if (filters.minScore > 0 && scoreToPercent(m.score) < filters.minScore) return false;
-    return true;
-  });
-}
-
-function hasActiveFilters() {
-  return filters.days.length > 0 || filters.loc || filters.style || filters.minScore > 0;
-}
-
-// ─── Build a match/connection card ───────────────────────────────────────────
-
-function buildCard(matchObj, context) {
-  // context: 'inbound' | 'match' | 'sent-pending' | 'connected'
-  const p = matchObj.profile;
+function buildMatchCard(matchObj, context) {
+  // context: 'inbound' | 'match' | 'connected' | 'pending'
+  const p = matchObj.profile || matchObj;
   const pct = matchObj.score !== undefined ? scoreToPercent(matchObj.score) : null;
-  const sClass = pct !== null ? scoreClass(pct) : 'score-low';
-  const locDisplay = locationShort(p.location, p.overseas);
   const matched = matchObj.matched || [];
 
   const card = document.createElement('div');
   card.className = 'match-card';
   card.dataset.id = p.id;
+
   if (context === 'inbound') card.classList.add('card-inbound');
   if (context === 'connected') card.classList.add('card-connected');
 
-  // Build tag chips from matched array (no duplication with name row)
-  const tagChips = matched.slice(0, 4).map(m => {
-    const cls = (m.type === 'role' || m.type === 'dir' || m.type === 'days') ? 'tag-match' : 'tag-neutral';
-    return `<span class="tag ${cls}">${m.label}</span>`;
+  // Score pill colour
+  let scoreClass = 'score-low';
+  if (pct >= 75) scoreClass = 'score-high';
+  else if (pct >= 50) scoreClass = 'score-med';
+
+  const locDisplay = locationShort(p.location, p.overseas);
+
+  // Tags
+  const tagHTML = matched.slice(0, 5).map(m => {
+    if (m.type === 'loc') return `<span class="tag tag-loc" style="${locTagStyle(p.location)}">${m.label}</span>`;
+    if (m.type === 'grade') return `<span class="tag tag-match">${m.label}</span>`;
+    if (m.type === 'role') return `<span class="tag tag-match">${m.label}</span>`;
+    if (m.type === 'dir') return `<span class="tag tag-match">${m.label}</span>`;
+    if (m.type === 'days') return `<span class="tag tag-match">${m.label}</span>`;
+    if (m.type === 'style') return `<span class="tag tag-neutral">${m.label}</span>`;
+    return `<span class="tag tag-neutral">${m.label}</span>`;
   }).join('');
 
-  // Location tag always shown
-  const locTag = `<span class="tag" style="${locTagStyle(p.location)}">${locDisplay}</span>`;
+  // Location tag (always show)
+  const locTag = `<span class="tag tag-loc" style="${locTagStyle(p.location)}">${locDisplay}</span>`;
 
-  // Name row extras
-  let nameRowExtra = '';
-  if (context === 'inbound') nameRowExtra = `<span class="inbound-label">Requested you</span>`;
-  if (context === 'sent-pending') nameRowExtra = `<span class="pending-label">Request sent</span>`;
+  let actionsHTML = '';
+  let statusHTML = '';
+  let footerHTML = '';
 
-  // Status line
-  let statusLine = '';
   if (context === 'inbound') {
-    statusLine = `<div class="card-status"><span class="status-dot dot-received"></span>Waiting for your response</div>`;
+    actionsHTML = `
+      <div class="card-actions">
+        <button class="btn btn-accept" onclick="acceptRequest('${p.id}')">Accept connection</button>
+        <button class="btn btn-ghost" onclick="declineRequest('${p.id}')">Decline</button>
+      </div>`;
+    statusHTML = `<div class="status-row"><span class="status-dot dot-received"></span><span class="status-text">Requested to connect with you</span></div>`;
+  } else if (context === 'match') {
+    actionsHTML = `
+      <div class="card-actions">
+        <button class="btn btn-primary" onclick="sendRequest('${p.id}')">Request connection</button>
+        <button class="btn btn-dismiss" onclick="dismiss('${p.id}')">Dismiss</button>
+      </div>`;
   } else if (context === 'sent-pending') {
-    statusLine = `<div class="card-status"><span class="status-dot dot-sent"></span>Awaiting their response</div>`;
+    actionsHTML = `
+      <div class="card-actions">
+        <button class="btn btn-ghost" onclick="withdrawRequest('${p.id}')">Withdraw request</button>
+      </div>`;
+    statusHTML = `<div class="status-row"><span class="status-dot dot-sent"></span><span class="status-text">You sent a request — awaiting response</span></div>`;
   } else if (context === 'connected') {
     const conn = state.connections.find(c => c.id === p.id);
     const dirText = conn && conn.dir === 'sent' ? 'You requested · they accepted' : 'They requested · you accepted';
     const dateStr = conn ? relativeDate(conn.ts) : '';
-    statusLine = `<div class="conn-footer"><span>${dateStr}</span><span class="conn-dir">${dirText}</span></div>`;
-  }
-
-  // Right-column buttons
-  let rightButtons = '';
-  if (context === 'inbound') {
-    rightButtons = `
-      <button class="card-btn card-btn-accept" onclick="acceptRequest('${p.id}')">Accept</button>
-      <button class="card-btn card-btn-ignore" onclick="ignoreRequest('${p.id}')">Ignore</button>
-      ${pct !== null ? `<button class="score-pill ${sClass}" onclick="openScoreModal('${p.id}')">${pct}% match</button>` : ''}
-      <button class="card-btn-more" onclick="openProfileModal('${p.id}')">Full profile…</button>`;
-  } else if (context === 'match') {
-    rightButtons = `
-      <button class="card-btn card-btn-primary" onclick="sendRequest('${p.id}')">Request</button>
-      <button class="card-btn card-btn-dismiss" onclick="dismiss('${p.id}')">Dismiss</button>
-      ${pct !== null ? `<button class="score-pill ${sClass}" onclick="openScoreModal('${p.id}')">${pct}% match</button>` : ''}
-      <button class="card-btn-more" onclick="openProfileModal('${p.id}')">Full profile…</button>`;
-  } else if (context === 'sent-pending') {
-    rightButtons = `
-      <button class="card-btn card-btn-withdraw" onclick="withdrawRequest('${p.id}')">Withdraw request</button>
-      ${pct !== null ? `<button class="score-pill ${sClass}" onclick="openScoreModal('${p.id}')">${pct}% match</button>` : ''}
-      <button class="card-btn-more" onclick="openProfileModal('${p.id}')">Full profile…</button>`;
-  } else if (context === 'connected') {
-    rightButtons = `
-      <a class="card-btn card-btn-email" href="mailto:${p.name}">
-        <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4l5.5 3.5L12 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Send email
-      </a>
-      ${pct !== null ? `<button class="score-pill ${sClass}" onclick="openScoreModal('${p.id}')">${pct}% match</button>` : ''}
-      <button class="card-btn-more" onclick="openProfileModal('${p.id}')">Full profile…</button>`;
+    footerHTML = `
+      <div class="conn-footer">
+        <span>${dateStr}</span>
+        <span class="conn-dir">${dirText}</span>
+      </div>`;
+    actionsHTML = `
+      <div class="card-actions">
+        <a class="btn btn-email" href="mailto:${p.name}" title="Open email to ${p.name}">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:5px;flex-shrink:0;">
+            <rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1 4l5.5 3.5L12 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Send email
+        </a>
+      </div>`;
   }
 
   card.innerHTML = `
-    <div class="card-layout">
-      <div class="card-left">
-        <div class="card-name-row">
-          <span class="card-name">${p.name}</span>
-          <span class="card-grade">${p.grade}</span>
-          ${nameRowExtra}
-        </div>
-        <div class="card-tags">${tagChips}${locTag}</div>
-        ${statusLine}
+    <div class="card-top">
+      <div class="card-avatar" id="av-${p.id}"></div>
+      <div class="card-info">
+        <div class="card-name">${p.name}</div>
+        <div class="card-sub">${p.grade} · ${p.directorates.filter(d=>d!=='Open to any').slice(0,1).join('') || 'Various'} · ${locDisplay}</div>
       </div>
-      <div class="card-right">${rightButtons}</div>
-    </div>`;
+      ${pct !== null ? `<div class="score-pill ${scoreClass}">${pct}%</div>` : ''}
+    </div>
+    <div class="card-tags">${tagHTML}${locTag}</div>
+    ${actionsHTML}
+    ${statusHTML}
+    ${footerHTML}
+  `;
+
+  // Insert avatar element
+  const avSlot = card.querySelector(`#av-${p.id}`);
+  if (avSlot) avSlot.replaceWith(avatarEl(p));
 
   return card;
 }
 
 function relativeDate(ts) {
-  if (!ts) return '';
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
   if (mins < 2) return 'just now';
@@ -325,88 +275,6 @@ function relativeDate(ts) {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   return `${days} day${days > 1 ? 's' : ''} ago`;
-}
-
-// ─── Modals ───────────────────────────────────────────────────────────────────
-
-function openModal(html) {
-  document.getElementById('modalBox').innerHTML = html;
-  document.getElementById('modalOverlay').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-
-function closeModalIfBg(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-
-function openProfileModal(id) {
-  const p = DUMMY_PROFILES.find(x => x.id === id);
-  if (!p) return;
-  const locDisplay = locationShort(p.location, p.overseas);
-  const roleTags = p.roles.map(r => `<span class="modal-tag">${r}</span>`).join('');
-  const dirTags = p.directorates.map(d => `<span class="modal-tag">${d}</span>`).join('');
-  const dayTags = p.days.map(d => `<span class="modal-tag">${d}</span>`).join('');
-  const styleStr = styleLabel(p.style) || 'Not specified';
-
-  openModal(`
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-name">${p.name}</div>
-    <div class="modal-grade-loc">${p.grade} · ${locDisplay}</div>
-    <div class="modal-section">
-      <div class="modal-section-label">Roles they'd consider</div>
-      <div class="modal-tags">${roleTags}</div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-label">Directorates</div>
-      <div class="modal-tags">${dirTags}</div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-label">Working days</div>
-      <div class="modal-tags">${dayTags}</div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-label">Working style</div>
-      <div class="modal-tags"><span class="modal-tag">${styleStr}</span></div>
-    </div>
-  `);
-}
-
-function openScoreModal(id) {
-  if (!state.profile) return;
-  const p = DUMMY_PROFILES.find(x => x.id === id);
-  if (!p) return;
-  const result = scoreMatch(state.profile, p);
-  const pct = scoreToPercent(result.score);
-  const sClass = scoreClass(pct);
-
-  const rows = result.breakdown.map(b => {
-    const barPct = Math.round((b.score / b.max) * 100);
-    const fillClass = barPct >= 70 ? 'fill-good' : barPct >= 30 ? 'fill-ok' : 'fill-low';
-    return `
-      <div class="score-row">
-        <span class="score-row-label">${b.label}</span>
-        <div class="score-row-bar"><div class="score-row-fill ${fillClass}" style="width:${barPct}%"></div></div>
-        <span class="score-row-note">${b.note}</span>
-      </div>`;
-  }).join('');
-
-  openModal(`
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-name">${p.name}</div>
-    <div class="modal-grade-loc">${p.grade} · ${locationShort(p.location, p.overseas)}</div>
-    <hr class="modal-divider">
-    <div class="modal-score-title">
-      Match breakdown
-      <span class="score-pill ${sClass} modal-score-pct">${pct}% match</span>
-    </div>
-    <div class="score-breakdown">${rows}</div>
-    <div style="margin-top:12px;font-size:11px;color:#bbb;line-height:1.6;">
-      Score based on grade compatibility, shared roles, directorate overlap, day pattern, and working style.
-    </div>
-  `);
 }
 
 // ─── Tab switching ────────────────────────────────────────────────────────────
@@ -438,7 +306,8 @@ function buildAccordion() {
       <span class="acc-emoji">${group.emoji}</span>
       <span class="acc-label">${group.label}</span>
       <span class="acc-count" id="count-${group.id}"></span>
-      <span class="acc-arrow">▶</span>`;
+      <span class="acc-arrow">▶</span>
+    `;
     header.addEventListener('click', () => {
       grp.classList.toggle('open');
       header.classList.toggle('open');
@@ -447,17 +316,12 @@ function buildAccordion() {
     const body = document.createElement('div');
     body.className = 'acc-body';
 
-    const note = document.createElement('div');
-    note.className = 'acc-grade-note';
-    note.textContent = 'Some roles are dashed — they\'re typically for higher grades, but you can still select them if relevant to your situation.';
-    body.appendChild(note);
-
     const selAll = document.createElement('span');
     selAll.className = 'acc-sel-all';
-    selAll.textContent = 'Select all in group';
+    selAll.textContent = 'Select available';
     selAll.addEventListener('click', (e) => {
       e.stopPropagation();
-      body.querySelectorAll('.role-chip').forEach(c => c.classList.add('selected'));
+      body.querySelectorAll('.role-chip:not(.greyed)').forEach(c => c.classList.add('selected'));
       updateRoleSummary();
       updateCompleteness();
     });
@@ -468,11 +332,12 @@ function buildAccordion() {
 
     group.roles.forEach(role => {
       const chip = document.createElement('button');
-      chip.className = 'role-chip';
+      chip.className = 'role-chip chip';
       chip.textContent = role.label;
       chip.dataset.role = role.label;
       chip.dataset.minGrade = role.minGrade;
       chip.addEventListener('click', () => {
+        if (chip.classList.contains('greyed')) return;
         chip.classList.toggle('selected');
         updateRoleSummary();
         updateCompleteness();
@@ -489,26 +354,22 @@ function buildAccordion() {
 
 function updateGradeFilter() {
   const grade = getSelectedSingle('gradeChips');
-  let anyGreyed = false;
-  document.querySelectorAll('.acc-group').forEach(grp => {
-    let groupHasGreyed = false;
-    grp.querySelectorAll('.role-chip').forEach(chip => {
-      const minG = chip.dataset.minGrade;
-      const aboveGrade = grade && !gradeAllowed(minG, grade);
-      chip.classList.toggle('greyed', aboveGrade);
-      if (aboveGrade) { groupHasGreyed = true; anyGreyed = true; }
-    });
-    grp.classList.toggle('has-greyed', groupHasGreyed);
+  document.querySelectorAll('.role-chip').forEach(chip => {
+    const minG = chip.dataset.minGrade;
+    const allowed = !grade || gradeAllowed(minG, grade);
+    chip.classList.toggle('greyed', !allowed);
+    if (!allowed) chip.classList.remove('selected');
   });
   updateGroupCounts();
   updateRoleSummary();
+  updateCompleteness();
 }
 
 function updateGroupCounts() {
   ROLE_GROUPS.forEach(group => {
-    const count = document.querySelectorAll(`[data-group-id="${group.id}"] .role-chip.selected`).length;
+    const chips = document.querySelectorAll(`[data-group-id="${group.id}"] .role-chip.selected`);
     const el = document.getElementById('count-' + group.id);
-    if (el) el.textContent = count > 0 ? `${count} selected` : '';
+    if (el) el.textContent = chips.length > 0 ? `${chips.length} selected` : '';
   });
 }
 
@@ -523,12 +384,47 @@ function updateRoleSummary() {
 }
 
 function getSelectedSingle(containerId) {
-  const sel = document.querySelector(`#${containerId} .selected`);
+  const sel = document.querySelector(`#${containerId} .chip.selected`);
   return sel ? sel.dataset.val : null;
 }
 
 function getSelectedMulti(containerId) {
-  return [...document.querySelectorAll(`#${containerId} .selected`)].map(c => c.dataset.val);
+  return [...document.querySelectorAll(`#${containerId} .chip.selected`)].map(c => c.dataset.val);
+}
+
+function setupMultiChips(containerId) {
+  document.querySelectorAll(`#${containerId} .chip:not(.chip-single)`).forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+      updateCompleteness();
+    });
+  });
+}
+
+function setupSingleChips(containerId) {
+  document.querySelectorAll(`#${containerId} .chip-single, #${containerId} .chip.chip-single`).forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll(`#${containerId} .chip`).forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      updateCompleteness();
+      if (containerId === 'locChips') toggleOverseas();
+    });
+  });
+}
+
+function setupSingleStyleCards() {
+  document.querySelectorAll('#styleChips .style-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#styleChips .style-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      updateCompleteness();
+    });
+  });
+}
+
+function toggleOverseas() {
+  const loc = getSelectedSingle('locChips');
+  document.getElementById('overseasWrap').style.display = loc === 'Overseas' ? 'block' : 'none';
 }
 
 function updateCompleteness() {
@@ -537,7 +433,6 @@ function updateCompleteness() {
   const roles = [...document.querySelectorAll('.role-chip.selected')].length;
   const dirs = getSelectedMulti('dirChips').length;
   const days = getSelectedMulti('dayChips').length;
-  const style = getSelectedSingle('styleChips');
 
   let filled = 0;
   if (name) filled++;
@@ -545,75 +440,61 @@ function updateCompleteness() {
   if (roles > 0) filled++;
   if (dirs > 0) filled++;
   if (days > 0) filled++;
-  if (style) filled++;
 
-  const pct = Math.round((filled / 6) * 100);
+  const pct = Math.round((filled / 5) * 100);
   document.getElementById('complFill').style.width = pct + '%';
-  const labels = ['Profile incomplete', 'Getting started', 'Keep going…', 'Half way there', 'Almost there', 'Almost there', 'Profile complete'];
+  const labels = ['Profile incomplete', 'Good start', 'Almost there', 'Almost there', 'Profile complete', 'Profile complete'];
   document.getElementById('complLabel').textContent = labels[filled] || 'Profile complete';
   document.getElementById('complFill').style.background = pct === 100 ? '#27500A' : '#185FA5';
 }
 
+// ─── Load profile into form ───────────────────────────────────────────────────
+
 function loadProfileIntoForm() {
   const p = state.profile;
   if (!p) return;
+
   document.getElementById('userName').value = p.name || '';
 
+  // Grade
   document.querySelectorAll('#gradeChips .chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === p.grade);
   });
   updateGradeFilter();
 
+  // Roles
   document.querySelectorAll('.role-chip').forEach(c => {
     if ((p.roles || []).includes(c.dataset.role)) c.classList.add('selected');
   });
+
+  // Directorates
   document.querySelectorAll('#dirChips .chip').forEach(c => {
     c.classList.toggle('selected', (p.directorates || []).includes(c.dataset.val));
   });
+
+  // Days
   document.querySelectorAll('#dayChips .chip').forEach(c => {
     c.classList.toggle('selected', (p.days || []).includes(c.dataset.val));
   });
+
+  // Style
   document.querySelectorAll('#styleChips .style-card').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === p.style);
   });
+
+  // Location
   document.querySelectorAll('#locChips .chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === p.location);
   });
   toggleOverseas();
   if (p.overseas) document.getElementById('overseasSelect').value = p.overseas;
+
   updateRoleSummary();
   updateCompleteness();
   document.getElementById('deleteProfile').style.display = 'inline-block';
 }
 
-function toggleOverseas() {
-  const loc = getSelectedSingle('locChips');
-  document.getElementById('overseasWrap').style.display = loc === 'Overseas' ? 'block' : 'none';
-}
-
-// ─── Setup chip interactions ──────────────────────────────────────────────────
-
-function setupMultiChips(containerId) {
-  document.querySelectorAll(`#${containerId} .chip`).forEach(chip => {
-    chip.addEventListener('click', () => {
-      chip.classList.toggle('selected');
-      updateCompleteness();
-    });
-  });
-}
-
-function setupSingleChips(containerId, onChange) {
-  document.querySelectorAll(`#${containerId} .chip`).forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll(`#${containerId} .chip`).forEach(c => c.classList.remove('selected'));
-      chip.classList.add('selected');
-      updateCompleteness();
-      if (onChange) onChange(chip.dataset.val);
-    });
-  });
-}
-
-// ─── Save / delete profile ────────────────────────────────────────────────────
+// ─── Save profile ─────────────────────────────────────────────────────────────
 
 document.getElementById('saveProfile').addEventListener('click', () => {
   const name = document.getElementById('userName').value.trim();
@@ -626,8 +507,7 @@ document.getElementById('saveProfile').addEventListener('click', () => {
   if (directorates.length === 0) { showSaveStatus('Please select at least one directorate.', 'error'); return; }
   const days = getSelectedMulti('dayChips');
   if (days.length === 0) { showSaveStatus('Please select your working days.', 'error'); return; }
-  const style = document.querySelector('#styleChips .selected')?.dataset.val || null;
-  if (!style) { showSaveStatus('Please select a working style.', 'error'); return; }
+  const style = getSelectedSingle('styleChips') || document.querySelector('#styleChips .style-card.selected')?.dataset.val || null;
   const location = getSelectedSingle('locChips');
   const overseas = location === 'Overseas' ? document.getElementById('overseasSelect').value : '';
 
@@ -636,13 +516,14 @@ document.getElementById('saveProfile').addEventListener('click', () => {
   saveState();
   updateBadges();
   document.getElementById('deleteProfile').style.display = 'inline-block';
-  showSaveStatus('Profile saved! Finding your matches…', 'ok');
+  showSaveStatus('Profile saved! Switching to your matches…', 'ok');
   setTimeout(() => switchTab('matches'), 1200);
 });
 
 document.getElementById('deleteProfile').addEventListener('click', () => {
   if (!confirm('Delete your profile? This will remove all your data including connections.')) return;
-  localStorage.removeItem(STATE_KEY);
+  state = defaultState();
+  saveState();
   location.reload();
 });
 
@@ -654,7 +535,7 @@ function showSaveStatus(msg, type) {
   if (type === 'ok') setTimeout(() => el.style.display = 'none', 3000);
 }
 
-// ─── Render matches ───────────────────────────────────────────────────────────
+// ─── Matches ──────────────────────────────────────────────────────────────────
 
 function renderMatches() {
   if (!state.profile) {
@@ -666,7 +547,9 @@ function renderMatches() {
   document.getElementById('matchesContent').style.display = 'block';
 
   // Inbound requests
-  const inboundIds = state.receivedRequests.filter(id => !state.connections.find(c => c.id === id));
+  const inboundIds = state.receivedRequests.filter(id =>
+    !state.connections.find(c => c.id === id)
+  );
   const inboundSec = document.getElementById('inboundSection');
   const inboundCards = document.getElementById('inboundCards');
   inboundCards.innerHTML = '';
@@ -675,15 +558,19 @@ function renderMatches() {
     inboundIds.forEach(id => {
       const p = DUMMY_PROFILES.find(x => x.id === id);
       if (!p) return;
-      inboundCards.appendChild(buildCard({ profile: p, ...scoreMatch(state.profile, p) }, 'inbound'));
+      const m = { profile: p, ...scoreMatch(state.profile, p) };
+      inboundCards.appendChild(buildMatchCard(m, 'inbound'));
     });
   } else {
     inboundSec.style.display = 'none';
   }
 
-  // Suggested matches
-  const allMatches = getMatches();
-  let visible = allMatches.filter(m => {
+  // Regular matches
+  const matches = getMatches();
+  const cards = document.getElementById('matchCards');
+  cards.innerHTML = '';
+
+  const visible = matches.filter(m => {
     const id = m.profile.id;
     if (state.connections.find(c => c.id === id)) return false;
     if (state.receivedRequests.includes(id)) return false;
@@ -691,10 +578,13 @@ function renderMatches() {
     return true;
   });
 
-  visible = applyFilters(visible);
+  const showDRow = document.getElementById('showDismissedRow');
+  const hasDismissed = matches.some(m => state.dismissed.includes(m.profile.id) &&
+    !state.connections.find(c => c.id === m.profile.id));
 
-  const cards = document.getElementById('matchCards');
-  cards.innerHTML = '';
+  showDRow.style.display = hasDismissed ? 'block' : 'none';
+  document.getElementById('showDismissedBtn').textContent =
+    state.showDismissed ? 'Hide dismissed profiles' : 'Show dismissed profiles';
 
   if (visible.length === 0 && inboundIds.length === 0) {
     document.getElementById('noMatches').style.display = 'block';
@@ -703,35 +593,42 @@ function renderMatches() {
   }
 
   visible.forEach(m => {
-    const ctx = state.sentRequests.includes(m.profile.id) ? 'sent-pending' : 'match';
-    cards.appendChild(buildCard(m, ctx));
+    const id = m.profile.id;
+    let ctx = 'match';
+    if (state.sentRequests.includes(id)) ctx = 'sent-pending';
+    cards.appendChild(buildMatchCard(m, ctx));
   });
-
-  const hasDismissed = allMatches.some(m =>
-    state.dismissed.includes(m.profile.id) && !state.connections.find(c => c.id === m.profile.id)
-  );
-  const showDRow = document.getElementById('showDismissedRow');
-  showDRow.style.display = hasDismissed ? 'block' : 'none';
-  document.getElementById('showDismissedBtn').textContent =
-    state.showDismissed ? 'Hide dismissed profiles' : 'Show hidden profiles';
 
   updateBadges();
 }
-
-// ─── Match actions ────────────────────────────────────────────────────────────
 
 function sendRequest(id) {
   if (state.sentRequests.includes(id)) return;
   state.sentRequests.push(id);
   saveState();
   renderMatches();
-  // ~60% acceptance rate
-  if (Math.random() > 0.4) schedulePendingAccept(id);
+
+  // Simulate ~50% acceptance after 3s
+  const willAccept = Math.random() > 0.45;
+  if (willAccept) {
+    setTimeout(() => {
+      if (state.sentRequests.includes(id) && !state.connections.find(c => c.id === id)) {
+        state.sentRequests = state.sentRequests.filter(x => x !== id);
+        state.connections.push({ id, dir: 'sent', ts: Date.now() });
+        const p = DUMMY_PROFILES.find(x => x.id === id);
+        state.newConnBanner = p ? `${p.name} accepted your request!` : 'A new connection accepted your request!';
+        saveState();
+        updateBadges();
+        // If currently on connections tab, refresh it
+        if (document.getElementById('tab-connections').classList.contains('active')) renderConnections();
+        if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
+      }
+    }, 3000 + Math.random() * 2000);
+  }
 }
 
 function withdrawRequest(id) {
   state.sentRequests = state.sentRequests.filter(x => x !== id);
-  delete state.pendingTimers[id];
   saveState();
   renderMatches();
   if (document.getElementById('tab-connections').classList.contains('active')) renderConnections();
@@ -746,7 +643,7 @@ function acceptRequest(id) {
   if (document.getElementById('tab-connections').classList.contains('active')) renderConnections();
 }
 
-function ignoreRequest(id) {
+function declineRequest(id) {
   state.receivedRequests = state.receivedRequests.filter(x => x !== id);
   state.dismissed.push(id);
   saveState();
@@ -765,7 +662,7 @@ document.getElementById('showDismissedBtn').addEventListener('click', () => {
   renderMatches();
 });
 
-// ─── Render connections ───────────────────────────────────────────────────────
+// ─── Connections ──────────────────────────────────────────────────────────────
 
 function renderConnections() {
   if (!state.profile) {
@@ -780,9 +677,8 @@ function renderConnections() {
   const banner = document.getElementById('newConnBanner');
   if (state.newConnBanner) {
     banner.style.display = 'flex';
-    banner.innerHTML = `<span style="font-size:16px;flex-shrink:0;">🎉</span>
-      <span>${state.newConnBanner}</span>
-      <button onclick="clearBanner()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#27500A;font-size:18px;line-height:1;">×</button>`;
+    banner.innerHTML = `<span style="font-size:16px;flex-shrink:0;">🎉</span><span>${state.newConnBanner}</span>
+      <button onclick="clearBanner()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#27500A;font-size:16px;">×</button>`;
     state.newConnBanner = null;
     saveState();
   } else {
@@ -798,13 +694,15 @@ function renderConnections() {
     state.connections.slice().reverse().forEach(conn => {
       const p = DUMMY_PROFILES.find(x => x.id === conn.id);
       if (!p) return;
-      connCards.appendChild(buildCard({ profile: p, ...scoreMatch(state.profile, p), conn }, 'connected'));
+      const m = { profile: p, ...scoreMatch(state.profile, p) };
+      m.conn = conn;
+      connCards.appendChild(buildMatchCard(m, 'connected'));
     });
   } else {
     connSec.style.display = 'none';
   }
 
-  // Pending
+  // Pending (sent, not yet accepted)
   const pendSec = document.getElementById('pendingSection');
   const pendCards = document.getElementById('pendingCards');
   pendCards.innerHTML = '';
@@ -814,7 +712,8 @@ function renderConnections() {
     pending.forEach(id => {
       const p = DUMMY_PROFILES.find(x => x.id === id);
       if (!p) return;
-      pendCards.appendChild(buildCard({ profile: p, ...scoreMatch(state.profile, p) }, 'sent-pending'));
+      const m = { profile: p, ...scoreMatch(state.profile, p) };
+      pendCards.appendChild(buildMatchCard(m, 'sent-pending'));
     });
   } else {
     pendSec.style.display = 'none';
@@ -833,71 +732,28 @@ function clearBanner() {
 function updateBadges() {
   const matchBadge = document.getElementById('matchBadge');
   const connBadge = document.getElementById('connBadge');
-  if (!state.profile) {
+
+  if (state.profile) {
+    const inbound = state.receivedRequests.filter(id => !state.connections.find(c => c.id === id)).length;
+    if (inbound > 0) {
+      matchBadge.textContent = inbound;
+      matchBadge.style.display = 'inline-flex';
+    } else {
+      matchBadge.style.display = 'none';
+    }
+
+    const newConns = state.connections.length;
+    if (newConns > 0) {
+      connBadge.textContent = newConns;
+      connBadge.style.display = 'inline-flex';
+    } else {
+      connBadge.style.display = 'none';
+    }
+  } else {
     matchBadge.style.display = 'none';
     connBadge.style.display = 'none';
-    return;
   }
-  const inbound = state.receivedRequests.filter(id => !state.connections.find(c => c.id === id)).length;
-  matchBadge.textContent = inbound;
-  matchBadge.style.display = inbound > 0 ? 'inline-flex' : 'none';
-
-  const total = state.connections.length;
-  connBadge.textContent = total;
-  connBadge.style.display = total > 0 ? 'inline-flex' : 'none';
 }
-
-// ─── Filter UI ────────────────────────────────────────────────────────────────
-
-document.getElementById('filterToggleBtn').addEventListener('click', () => {
-  const bar = document.getElementById('filterBar');
-  const btn = document.getElementById('filterToggleBtn');
-  bar.classList.toggle('open');
-  btn.classList.toggle('active');
-});
-
-document.getElementById('filterClearBtn').addEventListener('click', () => {
-  filters.days = []; filters.loc = null; filters.style = null; filters.minScore = 0;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('selected'));
-  document.querySelector('#filterScore [data-val="0"]').classList.add('selected');
-  document.getElementById('filterClearBtn').style.display = 'none';
-  renderMatches();
-});
-
-function setupFilterChips(containerId, onSelect) {
-  document.querySelectorAll(`#${containerId} .filter-chip`).forEach(chip => {
-    chip.addEventListener('click', () => {
-      onSelect(chip);
-      document.getElementById('filterClearBtn').style.display = hasActiveFilters() ? 'inline' : 'none';
-      renderMatches();
-    });
-  });
-}
-
-setupFilterChips('filterDays', chip => {
-  chip.classList.toggle('selected');
-  filters.days = [...document.querySelectorAll('#filterDays .filter-chip.selected')].map(c => c.dataset.val);
-});
-
-setupFilterChips('filterLoc', chip => {
-  const was = chip.classList.contains('selected');
-  document.querySelectorAll('#filterLoc .filter-chip').forEach(c => c.classList.remove('selected'));
-  if (!was) { chip.classList.add('selected'); filters.loc = chip.dataset.val; }
-  else filters.loc = null;
-});
-
-setupFilterChips('filterStyle', chip => {
-  const was = chip.classList.contains('selected');
-  document.querySelectorAll('#filterStyle .filter-chip').forEach(c => c.classList.remove('selected'));
-  if (!was) { chip.classList.add('selected'); filters.style = chip.dataset.val; }
-  else filters.style = null;
-});
-
-setupFilterChips('filterScore', chip => {
-  document.querySelectorAll('#filterScore .filter-chip').forEach(c => c.classList.remove('selected'));
-  chip.classList.add('selected');
-  filters.minScore = parseInt(chip.dataset.val, 10);
-});
 
 // ─── Refresh button ───────────────────────────────────────────────────────────
 
@@ -911,10 +767,22 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
     const active = document.querySelector('.tab-content.active');
     if (active.id === 'tab-matches') renderMatches();
     if (active.id === 'tab-connections') renderConnections();
-  }, 700);
+  }, 800);
 });
 
-// ─── Grade chip setup ─────────────────────────────────────────────────────────
+// ─── Overseas select ──────────────────────────────────────────────────────────
+
+function populateOverseas() {
+  const sel = document.getElementById('overseasSelect');
+  OVERSEAS_OFFICES.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o;
+    opt.textContent = o;
+    sel.appendChild(opt);
+  });
+}
+
+// ─── Grade chip: single select ────────────────────────────────────────────────
 
 document.querySelectorAll('#gradeChips .chip').forEach(chip => {
   chip.addEventListener('click', () => {
@@ -925,43 +793,14 @@ document.querySelectorAll('#gradeChips .chip').forEach(chip => {
   });
 });
 
-// ─── Overseas offices ─────────────────────────────────────────────────────────
-
-function populateOverseas() {
-  const sel = document.getElementById('overseasSelect');
-  OVERSEAS_OFFICES.forEach(o => {
-    const opt = document.createElement('option');
-    opt.value = o; opt.textContent = o;
-    sel.appendChild(opt);
-  });
-}
-
-// ─── Periodic poll for accepted requests while on connections tab ─────────────
-// Catches the case where user is sitting on connections tab when a timer fires
-
-setInterval(() => {
-  if (document.getElementById('tab-connections').classList.contains('active')) {
-    renderConnections();
-  }
-  if (document.getElementById('tab-matches').classList.contains('active')) {
-    updateBadges();
-  }
-}, 2000);
-
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 populateOverseas();
 buildAccordion();
 setupMultiChips('dirChips');
 setupMultiChips('dayChips');
-setupSingleChips('locChips', (val) => { if (val === 'Overseas') toggleOverseas(); else document.getElementById('overseasWrap').style.display = 'none'; });
-document.querySelectorAll('#styleChips .style-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('#styleChips .style-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    updateCompleteness();
-  });
-});
+setupSingleChips('locChips');
+setupSingleStyleCards();
 
 document.getElementById('userName').addEventListener('input', updateCompleteness);
 
@@ -970,6 +809,5 @@ if (state.profile) {
   maybeBootstrapInbound();
 }
 
-rehydrateTimers();
 updateBadges();
 updateCompleteness();
