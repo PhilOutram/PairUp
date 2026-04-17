@@ -22,250 +22,186 @@ const OVERSEAS_OFFICES = [
   'Vienna', 'Warsaw', 'Washington DC', 'Wellington', 'Windhoek', 'Zagreb',
 ];
 
-// ─── Dummy profiles ─────────────────────────────────────────────────────────
+// ─── Dummy profiles: generated, 15 per grade (120 total) ────────────────────
 
 const DAY = 86400000;
 const NOW = Date.now();
 
-const DUMMY_PROFILES = [
-  {
-    id: 'p001', name: 'A. Rahman', grade: 'HEO',
-    directorates: ['Economic & Trade', 'Climate & Environment'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Looking for roles in stage 2 of the restructure',
-    skills: '6 years policy, Middle East and trade specialism, programme management experience',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 3 * DAY,
-  },
-  {
-    id: 'p002', name: 'J. Pearce', grade: 'SEO',
-    directorates: ['Climate & Environment', 'Security & Defence'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'part', Thu: 'non', Fri: 'non' },
-    fte: '0.7 FTE', daysNegotiable: 'no',
-    availability: 'End of tour June, seeking partner for next posting',
-    skills: '', workingPatternNotes: '',
-    otherInfo: 'Applying for Geneva multilateral roles',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 6 * DAY,
-  },
-  {
-    id: 'p003', name: 'M. Thornton', grade: 'HEO',
-    directorates: ['HR & People'],
-    days: { Mon: 'non', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'full' },
-    fte: '3 days', daysNegotiable: 'possibly',
-    availability: 'Open to opportunities — flexible on timing',
-    skills: 'HR business partnering, D&I lead, complex casework',
-    workingPatternNotes: 'Prefer not to work school holidays',
-    otherInfo: '',
-    style: 'flexible', location: 'East Kilbride', overseas: '',
-    lastActive: NOW - 28 * DAY,
-  },
-  {
-    id: 'p004', name: 'S. Okafor', grade: 'G7',
-    directorates: ['Economic & Trade', 'Programme Delivery'],
-    days: { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Have been offered strategy role, seeking Tue/Fri partner',
-    skills: '', workingPatternNotes: '', otherInfo: '',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 2 * DAY,
-  },
-  {
-    id: 'p005', name: 'L. Chen', grade: 'HEO',
-    directorates: ['Digital & Data'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'flexible' },
-    fte: '0.7 FTE', daysNegotiable: 'yes',
-    availability: 'Looking for data or digital product role in stage 2',
-    skills: 'Python, SQL, dashboarding, 4 years policy analytics',
-    workingPatternNotes: 'Happy to cover Friday mornings if needed',
-    otherInfo: '',
-    style: 'flexible', location: 'Remote', overseas: '',
-    lastActive: NOW - 35 * DAY,
-  },
-  {
-    id: 'p006', name: 'P. Williams', grade: 'SEO',
-    directorates: ['Programme Delivery', 'Climate & Environment'],
-    days: { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'no',
-    availability: 'Returning from maternity leave, seeking Wed-Fri partner',
-    skills: '', workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 45 * DAY,
-  },
-  {
-    id: 'p007', name: 'F. Mensah', grade: 'HEO',
-    directorates: ['Finance', 'Corporate Services'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'possibly',
-    availability: '',
-    skills: 'Budget management, 5 years finance business partner',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'East Kilbride', overseas: '',
-    lastActive: NOW - 52 * DAY,
-  },
-  {
-    id: 'p008', name: 'C. Adeyemi', grade: 'G7',
-    directorates: ['Economic & Trade', 'HR & People'],
-    days: { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'full', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Looking for strategy or talent roles, stage 2',
-    skills: 'Workforce strategy, organisational design, 10 years FCDO',
-    workingPatternNotes: '', otherInfo: 'Open to 12-month initial trial',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 9 * DAY,
-  },
-  {
-    id: 'p009', name: 'R. Kapoor', grade: 'HEO',
-    directorates: ['Security & Defence', 'Overseas Network'],
-    days: { Mon: 'full', Tue: 'non', Wed: 'non', Thu: 'full', Fri: 'flexible' },
-    fte: '0.5 FTE', daysNegotiable: 'possibly',
-    availability: 'Currently Delhi — seeking London-based partner from Sep',
-    skills: '', workingPatternNotes: 'Time zone overlap with UK mornings',
-    otherInfo: 'Planning UK return Aug 2026',
-    style: 'flexible', location: 'Overseas', overseas: 'Delhi',
-    lastActive: NOW - 135 * DAY,
-  },
-  {
-    id: 'p010', name: 'T. Nakamura', grade: 'SEO',
-    directorates: ['Communications'],
-    days: { Mon: 'full', Tue: 'part', Wed: 'non', Thu: 'full', Fri: 'non' },
-    fte: '0.5 FTE', daysNegotiable: 'yes',
-    availability: 'Strategic comms — happy to discuss any team',
-    skills: 'Press office lead, strategic communications planning',
-    workingPatternNotes: 'Work Tuesday mornings only',
-    otherInfo: '',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 4 * DAY,
-  },
-  {
-    id: 'p011', name: 'B. Owusu', grade: 'G7',
-    directorates: ['Legal & Governance'],
-    days: { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'no',
-    availability: '',
-    skills: 'Government legal, compliance, public international law',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 70 * DAY,
-  },
-  {
-    id: 'p012', name: 'E. Morrison', grade: 'HEO',
-    directorates: ['Consular'],
-    days: { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Actively seeking, flexible on timing',
-    skills: '', workingPatternNotes: 'Carer responsibilities Mon/Thu',
-    otherInfo: '',
-    style: 'flexible', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 11 * DAY,
-  },
-  {
-    id: 'p013', name: 'D. Johansson', grade: 'EO',
-    directorates: ['Finance', 'Corporate Services'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'possibly',
-    availability: 'Finance or corporate services roles, stage 2',
-    skills: 'Procurement, budget reporting', workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'East Kilbride', overseas: '',
-    lastActive: NOW - 40 * DAY,
-  },
-  {
-    id: 'p014', name: 'N. Dubois', grade: 'SEO',
-    directorates: ['Programme Delivery', 'Climate & Environment'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'no',
-    availability: '',
-    skills: 'Monitoring & evaluation, climate finance thematic lead',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 150 * DAY,
-  },
-  {
-    id: 'p015', name: 'K. Osei', grade: 'HEO',
-    directorates: ['HR & People'],
-    days: { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'part' },
-    fte: '22 hours', daysNegotiable: 'possibly',
-    availability: 'Looking for HR or L&D roles',
-    skills: 'L&D design, facilitation, coaching qualification',
-    workingPatternNotes: 'Work 6 hours on Friday from home', otherInfo: '',
-    style: 'flexible', location: 'Remote', overseas: '',
-    lastActive: NOW - 210 * DAY,
-  },
-  {
-    id: 'p016', name: 'A. Fitzgerald', grade: 'G6',
-    directorates: ['Overseas Network', 'Security & Defence'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'no',
-    availability: '',
-    skills: 'Senior diplomatic, political reporting, crisis leadership',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'Overseas', overseas: 'Nairobi',
-    lastActive: NOW - 225 * DAY,
-  },
-  {
-    id: 'p017', name: 'Y. Ibrahim', grade: 'HEO',
-    directorates: ['Digital & Data'],
-    days: { Mon: 'non', Tue: 'full', Wed: 'flexible', Thu: 'full', Fri: 'full' },
-    fte: '0.7 FTE', daysNegotiable: 'yes',
-    availability: 'Digital product management, any directorate',
-    skills: 'Agile delivery, service design, 5 years digital FCDO',
-    workingPatternNotes: 'Wednesday flexible — can shift if partner prefers',
-    otherInfo: '',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 8 * DAY,
-  },
-  {
-    id: 'p018', name: 'S. Kowalski', grade: 'SEO',
-    directorates: ['HR & People', 'Corporate Services'],
-    days: { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'non', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Open to HR or corporate services',
-    skills: 'Talent management, workforce planning analytics',
-    workingPatternNotes: '', otherInfo: '',
-    style: 'flexible', location: 'East Kilbride', overseas: '',
-    lastActive: NOW - 120 * DAY,
-  },
-  {
-    id: 'p019', name: 'O. Nwosu', grade: 'G7',
-    directorates: ['Digital & Data'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'no',
-    availability: '',
-    skills: '', workingPatternNotes: '', otherInfo: '',
-    style: 'clean', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 200 * DAY,
-  },
-  {
-    id: 'p020', name: 'M. Patel', grade: 'HEO',
-    directorates: ['Economic & Trade', 'Programme Delivery', 'Open to any'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'part', Thu: 'non', Fri: 'non' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Very open — broad interests, seeking motivated partner',
-    skills: 'Policy, programme officer background, trade experience',
-    workingPatternNotes: '', otherInfo: 'Happy to consider job share across grades',
-    style: 'collaborative', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 5 * DAY,
-  },
-  {
-    id: 'p021', name: 'H. Davies', grade: 'SEO',
-    directorates: ['Security & Defence', 'Economic & Trade'],
-    days: { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'possibly',
-    availability: '',
-    skills: 'Senior policy, sanctions experience', workingPatternNotes: '', otherInfo: '',
-    style: 'flexible', location: 'London - KCS', overseas: '',
-    lastActive: NOW - 240 * DAY,
-  },
-  {
-    id: 'p022', name: 'G. Andersen', grade: 'HEO',
-    directorates: ['Communications'],
-    days: { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'non', Fri: 'full' },
-    fte: '0.6 FTE', daysNegotiable: 'yes',
-    availability: 'Comms role, any team, starting Sep',
-    skills: '', workingPatternNotes: 'School hours preferred', otherInfo: '',
-    style: 'collaborative', location: 'Remote', overseas: '',
-    lastActive: NOW - 100 * DAY,
-  },
+const INITIALS = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
+  'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'Y', 'Z',
 ];
+const SURNAMES = [
+  'Ahmed', 'Andersen', 'Adeyemi', 'Bennett', 'Brooks', 'Chen', 'Clarke', 'Davies',
+  'Dubois', 'Evans', 'Fitzgerald', 'Foster', 'Gupta', 'Hassan', 'Ibrahim', 'Jones',
+  'Johansson', 'Kapoor', 'Khan', 'Kowalski', 'Lee', 'Liu', 'Mensah', 'Morrison',
+  'Nakamura', 'Nwosu', 'Okafor', 'Osei', 'Owusu', 'Patel', 'Pearce', 'Rahman',
+  'Reyes', 'Ross', 'Singh', 'Taylor', 'Thornton', 'Walsh', 'Williams', 'Yusuf',
+];
+
+// Weighted toward popular directorates so any common user pick has plenty of
+// overlapping candidates per grade.
+const DIR_SETS = [
+  ['Economic & Trade'],
+  ['Economic & Trade', 'Climate & Environment'],
+  ['Economic & Trade', 'Programme Delivery'],
+  ['Economic & Trade', 'Security & Defence'],
+  ['Economic & Trade', 'Open to any'],
+  ['Climate & Environment'],
+  ['Climate & Environment', 'Programme Delivery'],
+  ['Climate & Environment', 'Overseas Network'],
+  ['Climate & Environment', 'Open to any'],
+  ['Programme Delivery'],
+  ['Programme Delivery', 'HR & People'],
+  ['Programme Delivery', 'Finance'],
+  ['Programme Delivery', 'Open to any'],
+  ['Security & Defence'],
+  ['Security & Defence', 'Overseas Network'],
+  ['Security & Defence', 'Open to any'],
+  ['HR & People'],
+  ['HR & People', 'Corporate Services'],
+  ['HR & People', 'Communications'],
+  ['Finance'],
+  ['Finance', 'Corporate Services'],
+  ['Digital & Data'],
+  ['Digital & Data', 'Programme Delivery'],
+  ['Legal & Governance'],
+  ['Legal & Governance', 'HR & People'],
+  ['Communications'],
+  ['Consular'],
+  ['Overseas Network'],
+  ['Corporate Services'],
+  ['Open to any'],
+  ['Open to any', 'Economic & Trade'],
+  ['Open to any', 'Programme Delivery'],
+];
+
+const DAYS_PATTERNS = [
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'full', Wed: 'part', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'full' },
+  { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'flexible' },
+  { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'non', Wed: 'non', Thu: 'full', Fri: 'flexible' },
+  { Mon: 'full', Tue: 'part', Wed: 'non', Thu: 'full', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'part' },
+  { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'non', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'non', Fri: 'full' },
+  { Mon: 'non', Tue: 'full', Wed: 'flexible', Thu: 'full', Fri: 'full' },
+  { Mon: 'flexible', Tue: 'full', Wed: 'non', Thu: 'non', Fri: 'part' },
+  { Mon: 'full', Tue: 'non', Wed: 'part', Thu: 'full', Fri: 'non' },
+];
+
+// Weighted toward London — matches real FCDO distribution
+const LOCATIONS = [
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'East Kilbride', overseas: '' },
+  { loc: 'East Kilbride', overseas: '' },
+  { loc: 'Remote', overseas: '' },
+  { loc: 'Overseas', overseas: 'Delhi' },
+  { loc: 'Overseas', overseas: 'Nairobi' },
+  { loc: 'Overseas', overseas: 'Brussels' },
+  { loc: 'Overseas', overseas: 'Washington DC' },
+  { loc: 'Overseas', overseas: 'Singapore' },
+  { loc: 'Overseas', overseas: 'Paris' },
+];
+
+const FTES = ['0.5 FTE', '0.6 FTE', '0.7 FTE', '0.8 FTE', '3 days', '22 hours', '30 hours', '4 days'];
+const NEGOTIABLES = ['yes', 'possibly', 'no', 'yes', 'possibly', ''];
+const STYLES = ['clean', 'collaborative', 'flexible', 'unsure', ''];
+
+const AVAILABILITIES = [
+  'Looking for roles in stage 2 of the restructure',
+  'Open to opportunities, flexible on timing',
+  'End of tour June, seeking partner for next posting',
+  'Have been offered a role, seeking Mon-Wed partner',
+  'Returning from maternity leave, starting Sep',
+  '',
+  'Comms role, any team, starting Oct',
+  'Open to HR or corporate services',
+  'Looking for strategy or talent roles',
+  'Currently overseas, UK return Aug 2026',
+  '',
+  'Actively seeking, stage 2 placements',
+  'Finance or corporate services roles, stage 2',
+  'Happy to consider any team where the work aligns',
+  '',
+];
+
+const SKILLS_POOL = [
+  '',
+  '8 years policy, Middle East and trade specialism',
+  'HR business partnering, D&I lead, complex casework',
+  'Digital product management, agile delivery',
+  'Finance business partner, 5 years budget management',
+  'Programme delivery, monitoring and evaluation specialist',
+  'Legal adviser, compliance, public international law',
+  'Press office lead, strategic communications',
+  'Consular, safeguarding, crisis response',
+  '',
+  'Data analysis, Python and SQL, 4 years analytics',
+  'Senior policy, sanctions and trade experience',
+  'Talent management, workforce planning',
+  'Policy adviser, programme officer background',
+  '',
+];
+
+const PATTERN_NOTES = [
+  '', '', '', '',
+  'Happy to cover school hours if needed',
+  'Prefer not to work school holidays',
+  'Can work 6 hours Wednesday from home',
+  'Carer responsibilities some days',
+];
+
+const OTHER_INFO = [
+  '', '', '', '', '',
+  'Open to 12-month initial trial',
+  'Applying for Geneva multilateral roles',
+  'Happy to consider job share across grades',
+];
+
+const DUMMY_PROFILES = [];
+let _pIdx = 1;
+
+GRADES.forEach((grade, gi) => {
+  for (let j = 0; j < 15; j++) {
+    const idx = gi * 15 + j;
+    const initial = INITIALS[(idx * 7) % INITIALS.length];
+    const surname = SURNAMES[idx % SURNAMES.length];
+    const loc = LOCATIONS[(idx * 3) % LOCATIONS.length];
+    // "Last active" distribution: ~55% fresh (<2 months), ~30% amber (2–6m),
+    // ~15% red (>6m). No grey in the colour scale any more.
+    const bucket = idx % 20;
+    let ageDays;
+    if (bucket < 11) ageDays = (idx * 3) % 60;               // ~55% fresh
+    else if (bucket < 17) ageDays = 60 + ((idx * 5) % 120);  // ~30% amber
+    else ageDays = 180 + ((idx * 7) % 120);                  // ~15% red
+
+    DUMMY_PROFILES.push({
+      id: 'p' + String(_pIdx++).padStart(3, '0'),
+      name: `${initial}. ${surname}`,
+      grade,
+      directorates: DIR_SETS[(idx * 5) % DIR_SETS.length],
+      days: DAYS_PATTERNS[(idx * 11) % DAYS_PATTERNS.length],
+      fte: FTES[idx % FTES.length],
+      daysNegotiable: NEGOTIABLES[idx % NEGOTIABLES.length],
+      availability: AVAILABILITIES[idx % AVAILABILITIES.length],
+      skills: SKILLS_POOL[idx % SKILLS_POOL.length],
+      workingPatternNotes: PATTERN_NOTES[idx % PATTERN_NOTES.length],
+      otherInfo: OTHER_INFO[idx % OTHER_INFO.length],
+      style: STYLES[idx % STYLES.length],
+      location: loc.loc,
+      overseas: loc.overseas,
+      lastActive: NOW - ageDays * DAY,
+    });
+  }
+});

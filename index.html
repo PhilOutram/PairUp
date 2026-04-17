@@ -71,6 +71,8 @@
 
   <main class="app-main">
 
+    <div id="newConnBanner" class="new-conn-banner global-banner" style="display:none"></div>
+
     <!-- PROFILE TAB -->
     <section id="tab-profile" class="tab-content active">
       <div class="tab-inner">
@@ -100,7 +102,7 @@
 
           <div class="form-section">
             <div class="form-label">Your name <span class="required">*</span></div>
-            <input type="text" id="userName" class="text-input" placeholder="e.g. A. Smith (visible to matches)" maxlength="40">
+            <input type="text" id="userName" class="text-input" placeholder="e.g. A. Smith (visible to matches)" maxlength="40" autocomplete="name">
           </div>
 
           <div class="form-section">
@@ -121,7 +123,7 @@
             <div class="form-label">Directorates / areas you'd consider <span class="required">*</span></div>
             <div class="chip-row" id="dirChips">
               <button class="chip" data-val="Economic & Trade">Economic &amp; Trade</button>
-              <button class="chip" data-val="Climate & Environment">Climate &amp; Env</button>
+              <button class="chip" data-val="Climate & Environment">Climate &amp; Environment</button>
               <button class="chip" data-val="Security & Defence">Security &amp; Defence</button>
               <button class="chip" data-val="Consular">Consular</button>
               <button class="chip" data-val="HR & People">HR &amp; People</button>
@@ -209,7 +211,7 @@
 
           <div class="form-section">
             <div class="form-label">FTE or hours per week</div>
-            <div class="form-hint">e.g. &lsquo;0.6 FTE&rsquo;, &lsquo;22 hours&rsquo;, &lsquo;3 days&rsquo;.</div>
+            <div class="form-hint">The amount of time per week you&rsquo;d prefer to work, e.g. &lsquo;0.6 FTE&rsquo;, &lsquo;22 hours&rsquo;, &lsquo;3 days&rsquo;.</div>
             <input type="text" id="userFte" class="text-input" maxlength="30" placeholder="e.g. 0.6 FTE">
           </div>
 
@@ -327,6 +329,17 @@
           <button class="btn-primary-sm" onclick="switchTab('profile')">Go to my profile</button>
         </div>
         <div id="matchesContent" class="tab-panel" style="display:none">
+          <div class="matches-top-row">
+            <div class="matches-top-title">Your matches</div>
+            <button class="btn-refresh-search" id="refreshSearchBtn" type="button" title="Re-run the search with your current settings">
+              <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
+                <path d="M1.5 7.5a6 6 0 1 0 6-6 6 6 0 0 0-4.24 1.76" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M1.5 3v4.5H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Refresh search
+            </button>
+          </div>
+
           <div class="collapsible-section prefs-section" id="prefsSection">
             <button class="collapsible-header" id="prefsToggle" type="button">
               <span class="collapsible-title">How I want to find matches</span>
@@ -411,6 +424,14 @@
                 <button class="filter-chip" data-val="Overseas">Overseas</button>
               </div>
             </div>
+            <div class="filter-section">
+              <div class="filter-section-label">Last active</div>
+              <div class="filter-chips" id="filterActive">
+                <button class="filter-chip" data-val="14">Last 2 weeks</button>
+                <button class="filter-chip" data-val="90">Last 3 months</button>
+                <button class="filter-chip" data-val="180">Last 6 months</button>
+              </div>
+            </div>
           </div>
 
           <div id="matchCards"></div>
@@ -436,8 +457,6 @@
           <button class="btn-primary-sm" onclick="switchTab('profile')">Set up profile</button>
         </div>
         <div id="connContent" class="tab-panel" style="display:none">
-          <div id="newConnBanner" class="new-conn-banner" style="display:none"></div>
-
           <div id="connectedSection" style="display:none">
             <div class="section-label">Connected</div>
             <div id="connectedCards"></div>

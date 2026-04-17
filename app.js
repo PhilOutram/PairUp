@@ -19,7 +19,10 @@ function defaultState() {
     showDismissed: false,
     newConnBanner: null,
     pendingTimers: {},     // id -> scheduledAt timestamp (persisted so reload survives)
+    hiddenSuggested: [],   // ids currently hidden from suggested matches (revealed by refresh)
+    activeOverrides: {},   // id -> timestamp, overrides the dummy's baked-in lastActive
     _bootstrapped: false,
+    _hiddenBootstrapped: false,
   };
 }
 
@@ -56,13 +59,39 @@ const EMPTY_DAYS = () => ({ Mon: 'non', Tue: 'non', Wed: 'non', Thu: 'non', Fri:
 function maybeBootstrapInbound() {
   if (!state.profile || state._bootstrapped) return;
   state._bootstrapped = true;
-  ['p001', 'p009'].forEach(id => {
-    if (!state.receivedRequests.includes(id) &&
-        !state.connections.find(c => c.id === id) &&
-        !state.sentRequests.includes(id)) {
-      state.receivedRequests.push(id);
-    }
+  state.activeOverrides = state.activeOverrides || {};
+  const user = state.profile;
+  // Seed the inbound pile with up to two plausible, high-match candidates
+  // who the user's own visibility rules would actually expose them to.
+  const seeds = DUMMY_PROFILES.filter(p => {
+    if (state.receivedRequests.includes(p.id)) return false;
+    if (state.connections.find(c => c.id === p.id)) return false;
+    if (state.sentRequests.includes(p.id)) return false;
+    if (!userVisibleToCandidate(user, p)) return false;
+    if (!candidateVisibleToSearcher(user, p)) return false;
+    const { score } = scoreMatch(user, p);
+    return score >= 50;
   });
+  seeds.sort((a, b) => {
+    const sa = scoreMatch(user, a).score;
+    const sb = scoreMatch(user, b).score;
+    return sb - sa;
+  });
+  seeds.slice(0, 2).forEach(p => {
+    state.receivedRequests.push(p.id);
+    state.activeOverrides[p.id] = Date.now();
+  });
+  saveState();
+}
+
+// Hide roughly 40% of the pool on first save so refresh feels dynamic
+// without leaving the initial Suggested view empty.
+function maybeBootstrapHiddenSuggested() {
+  if (!state.profile || state._hiddenBootstrapped) return;
+  state._hiddenBootstrapped = true;
+  state.hiddenSuggested = DUMMY_PROFILES
+    .filter(() => Math.random() < 0.4)
+    .map(p => p.id);
   saveState();
 }
 
@@ -86,6 +115,7 @@ function resolvePending(id) {
   state.newConnBanner = p ? `${p.name} accepted your request!` : 'A new connection accepted your request!';
   saveState();
   updateBadges();
+  renderConnectionBanner();
   if (document.getElementById('tab-connections').classList.contains('active')) renderConnections();
   if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
 }
@@ -179,9 +209,16 @@ function dayComplementarityScore(userDays, candDays) {
 // ─── Matching ────────────────────────────────────────────────────────────────
 
 function sharedDirectorates(userDirs, candDirs) {
-  return (userDirs || []).filter(d =>
-    d !== 'Open to any' && (candDirs || []).includes(d)
-  );
+  const u = (userDirs || []).filter(d => d !== 'Open to any');
+  const c = (candDirs || []).filter(d => d !== 'Open to any');
+  const userOpen = (userDirs || []).includes('Open to any');
+  const candOpen = (candDirs || []).includes('Open to any');
+  // Either side being "Open to any" means they overlap with everything the
+  // other party picked, so count all of those as shared directorates.
+  if (candOpen && userOpen) return Array.from(new Set([...u, ...c]));
+  if (candOpen) return u;
+  if (userOpen) return c;
+  return u.filter(d => c.includes(d));
 }
 
 function directorateOverlapAny(userDirs, candDirs) {
@@ -219,7 +256,7 @@ function rankScore(user, candidate, prefs) {
   });
 
   // Recency (0–20pts)
-  const ageDays = (Date.now() - (candidate.lastActive || 0)) / 86400000;
+  const ageDays = (Date.now() - (effectiveLastActive(candidate) || 0)) / 86400000;
   let recencyPts = 0;
   let recencyNote = '';
   if (ageDays < 14) { recencyPts = 20; recencyNote = 'Active recently'; }
@@ -276,6 +313,20 @@ function scoreMatch(user, candidate, prefs) {
 
 function candidateVisibleToSearcher(user, candidate) {
   const v = visibilityOf(candidate);
+  if (v.grade === 'must' && candidate.grade !== user.grade) return false;
+  if (v.directorates === 'must' &&
+      !directorateOverlapAny(user.directorates, candidate.directorates)) return false;
+  if (v.location === 'must' && candidate.location !== user.location) return false;
+  if (v.days === 'must' &&
+      dayComplementarityScore(user.days, candidate.days) < 0.3) return false;
+  return true;
+}
+
+// Given the USER's own visibility rules, can this candidate see the user?
+// Used to gate simulated inbound requests — a candidate can only "have sent a
+// request" if the user's own must-match rules would have let the candidate find them.
+function userVisibleToCandidate(user, candidate) {
+  const v = { ...DEFAULT_VISIBILITY(), ...(user.visibility || {}) };
   if (v.grade === 'must' && candidate.grade !== user.grade) return false;
   if (v.directorates === 'must' &&
       !directorateOverlapAny(user.directorates, candidate.directorates)) return false;
@@ -351,8 +402,10 @@ function daysSummary(days) {
 function getMatches() {
   if (!state.profile) return [];
   const user = state.profile;
+  const hidden = new Set(state.hiddenSuggested || []);
   return DUMMY_PROFILES
     .filter(candidate => {
+      if (hidden.has(candidate.id)) return false;
       if (!candidateVisibleToSearcher(user, candidate)) return false;
       if (!candidateSatisfiesSearcherGates(user, candidate, searchPrefs)) return false;
       return true;
@@ -378,7 +431,7 @@ function getMatches() {
 // ─── Filter state ─────────────────────────────────────────────────────────────
 // Simple secondary filters that layer on top of the main hard gates.
 
-const filters = { days: [], loc: null };
+const filters = { days: [], loc: null, activeWithin: null };
 
 function applyFilters(matches) {
   return matches.filter(m => {
@@ -392,12 +445,18 @@ function applyFilters(matches) {
       if (!ok) return false;
     }
     if (filters.loc && p.location !== filters.loc) return false;
+    if (filters.activeWithin) {
+      const ts = effectiveLastActive(p);
+      if (!ts) return false;
+      const ageDays = (Date.now() - ts) / 86400000;
+      if (ageDays > filters.activeWithin) return false;
+    }
     return true;
   });
 }
 
 function hasActiveFilters() {
-  return filters.days.length > 0 || filters.loc;
+  return filters.days.length > 0 || filters.loc || filters.activeWithin;
 }
 
 // ─── Build a match/connection card ───────────────────────────────────────────
@@ -422,9 +481,19 @@ function initialsOf(name) {
   return letters.slice(0, 3).map(l => l + '.').join('');
 }
 
-// Staleness display: shown on every card. Colour changes as the profile ages.
+// Returns the effective last-active timestamp, honouring any override
+// applied when a request is simulated (so "just sent a request" profiles
+// always appear recently active).
+function effectiveLastActive(p) {
+  const override = (state.activeOverrides || {})[p.id];
+  if (override) return override;
+  return p.lastActive;
+}
+
+// Staleness display: shown on every card. Three-colour scale: fresh (<2m),
+// amber (2-6m), red (6m+).
 function stalenessInfo(lastActive) {
-  if (!lastActive) return { text: 'Last active unknown', klass: 'stale-grey' };
+  if (!lastActive) return { text: 'Last active unknown', klass: 'stale-amber' };
   const ageDays = (Date.now() - lastActive) / 86400000;
   if (ageDays < 1) return { text: 'Active today', klass: 'stale-fresh' };
   if (ageDays < 2) return { text: 'Active yesterday', klass: 'stale-fresh' };
@@ -432,12 +501,12 @@ function stalenessInfo(lastActive) {
     const days = Math.round(ageDays);
     return { text: `Active ${days} days ago`, klass: 'stale-fresh' };
   }
-  if (ageDays < 90) {
+  if (ageDays < 60) {
     const weeks = Math.max(2, Math.round(ageDays / 7));
-    return { text: `Active ${weeks} weeks ago`, klass: 'stale-grey' };
+    return { text: `Active ${weeks} weeks ago`, klass: 'stale-fresh' };
   }
   if (ageDays < 180) {
-    const months = Math.max(3, Math.round(ageDays / 30));
+    const months = Math.max(2, Math.round(ageDays / 30));
     return { text: `Active ${months} months ago`, klass: 'stale-amber' };
   }
   return { text: 'Active 6+ months ago', klass: 'stale-red', tooltip: 'This profile may be out of date' };
@@ -507,7 +576,7 @@ function buildCard(matchObj, context) {
   if (context === 'inbound') statusText = `<span class="cstatus-inbound">· Requested you</span>`;
   else if (context === 'sent-pending') statusText = `<span class="cstatus-pending">· Request sent</span>`;
 
-  const stale = stalenessInfo(p.lastActive);
+  const stale = stalenessInfo(effectiveLastActive(p));
   const staleHtml = stale.text
     ? `<span class="cstale ${stale.klass}"${stale.tooltip ? ` title="${escapeHtml(stale.tooltip)}"` : ''}>${stale.text}</span>`
     : '';
@@ -540,21 +609,22 @@ function buildCard(matchObj, context) {
   let rightCol = '';
   if (context === 'inbound') {
     rightCol = `
-      <button style="${btnBase}${btnBlue}" onclick="acceptRequest('${p.id}')">Accept</button>
-      <button style="${btnBase}${btnGhost}" onclick="ignoreRequest('${p.id}')">Ignore</button>`;
+      <button type="button" style="${btnBase}${btnBlue}" data-action="accept" data-id="${p.id}">Accept</button>
+      <button type="button" style="${btnBase}${btnGhost}" data-action="ignore" data-id="${p.id}">Ignore</button>`;
   } else if (context === 'match') {
     rightCol = `
-      <button style="${btnBase}${btnBlue}" onclick="sendRequest('${p.id}')">Request</button>
-      <button style="${btnBase}${btnGhost}" onclick="dismiss('${p.id}')">Dismiss</button>`;
+      <button type="button" style="${btnBase}${btnBlue}" data-action="send" data-id="${p.id}">Request</button>
+      <button type="button" style="${btnBase}${btnGhost}" data-action="dismiss" data-id="${p.id}">Dismiss</button>`;
   } else if (context === 'sent-pending') {
     rightCol = `
-      <button style="${btnBase}${btnGhost}" onclick="withdrawRequest('${p.id}')">Withdraw</button>`;
+      <button type="button" style="${btnBase}${btnGhost}" data-action="withdraw" data-id="${p.id}">Withdraw</button>`;
   } else if (context === 'connected') {
     rightCol = `
       <a style="${btnBase}${btnBlue}text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;" href="mailto:${p.name}">
         <svg width="11" height="11" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4l5.5 3.5L12 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         Email
-      </a>`;
+      </a>
+      <button type="button" style="${btnBase}${btnGhost}" data-action="remove-connection" data-id="${p.id}">Remove</button>`;
   }
 
   const card = document.createElement('div');
@@ -934,6 +1004,7 @@ document.getElementById('saveProfile').addEventListener('click', () => {
     visibility: { ...visibilityState },
   };
   maybeBootstrapInbound();
+  maybeBootstrapHiddenSuggested();
   saveState();
   updateBadges();
   colourFilterChips();
@@ -1054,10 +1125,50 @@ function ignoreRequest(id) {
   renderMatches();
 }
 
-function dismiss(id) {
-  state.dismissed.push(id);
+function dismissMatch(id) {
+  if (!Array.isArray(state.dismissed)) state.dismissed = [];
+  if (!state.dismissed.includes(id)) state.dismissed.push(id);
+  // Always re-hide dismissed cards after a dismiss action so the click has a
+  // visible effect, even if the user previously toggled "Show hidden profiles".
+  state.showDismissed = false;
   saveState();
   renderMatches();
+}
+
+// Delegated listener — catches clicks on any card button by data-action.
+// Covers inbound / suggested / pending / connected contexts on both tabs.
+function handleCardClick(e) {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  switch (action) {
+    case 'accept':            acceptRequest(id); break;
+    case 'ignore':            ignoreRequest(id); break;
+    case 'send':              sendRequest(id); break;
+    case 'dismiss':           dismissMatch(id); break;
+    case 'withdraw':          withdrawRequest(id); break;
+    case 'remove-connection': removeConnection(id); break;
+  }
+}
+
+['matchCards', 'inboundCards', 'connectedCards', 'pendingCards'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', handleCardClick);
+});
+
+function removeConnection(id) {
+  const p = DUMMY_PROFILES.find(x => x.id === id);
+  const name = p ? p.name : 'this connection';
+  if (!confirm(`Remove ${name} from your connections? They won't be notified. You can always re-connect via Matches later.`)) return;
+  state.connections = state.connections.filter(c => c.id !== id);
+  // Push into dismissed so they don't immediately reappear as a suggested match.
+  // The regeneration logic will eventually cycle them back if the pool runs low.
+  if (!state.dismissed.includes(id)) state.dismissed.push(id);
+  saveState();
+  updateBadges();
+  renderConnections();
+  if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
 }
 
 document.getElementById('showDismissedBtn').addEventListener('click', () => {
@@ -1077,17 +1188,7 @@ function renderConnections() {
   document.getElementById('connNoProfile').style.display = 'none';
   document.getElementById('connContent').style.display = 'block';
 
-  const banner = document.getElementById('newConnBanner');
-  if (state.newConnBanner) {
-    banner.style.display = 'flex';
-    banner.innerHTML = `<span style="font-size:16px;flex-shrink:0;">🎉</span>
-      <span>${state.newConnBanner}</span>
-      <button onclick="clearBanner()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#27500A;font-size:18px;line-height:1;">×</button>`;
-    state.newConnBanner = null;
-    saveState();
-  } else {
-    banner.style.display = 'none';
-  }
+  renderConnectionBanner();
 
   const connSec = document.getElementById('connectedSection');
   const connCards = document.getElementById('connectedCards');
@@ -1122,8 +1223,23 @@ function renderConnections() {
   document.getElementById('connEmptyState').style.display = empty ? 'block' : 'none';
 }
 
+function renderConnectionBanner() {
+  const banner = document.getElementById('newConnBanner');
+  if (!banner) return;
+  if (state.newConnBanner) {
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span style="font-size:16px;flex-shrink:0;">🎉</span>
+      <span>${state.newConnBanner}</span>
+      <button onclick="clearBanner()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#27500A;font-size:18px;line-height:1;padding:0 4px;">×</button>`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
 function clearBanner() {
   document.getElementById('newConnBanner').style.display = 'none';
+  state.newConnBanner = null;
+  saveState();
 }
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
@@ -1191,7 +1307,7 @@ document.getElementById('filterToggleBtn').addEventListener('click', () => {
 });
 
 document.getElementById('filterClearBtn').addEventListener('click', () => {
-  filters.days = []; filters.loc = null;
+  filters.days = []; filters.loc = null; filters.activeWithin = null;
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('selected'));
   document.getElementById('filterClearBtn').style.display = 'none';
   applyFilterChipColours();
@@ -1225,8 +1341,180 @@ if (document.getElementById('filterLoc')) {
     else filters.loc = null;
   });
 }
+if (document.getElementById('filterActive')) {
+  setupFilterChips('filterActive', chip => {
+    const was = chip.classList.contains('selected');
+    document.querySelectorAll('#filterActive .filter-chip').forEach(c => c.classList.remove('selected'));
+    if (!was) { chip.classList.add('selected'); filters.activeWithin = parseInt(chip.dataset.val, 10); }
+    else filters.activeWithin = null;
+  });
+}
 
 // ─── Refresh button ───────────────────────────────────────────────────────────
+
+function maybeAddSimulatedRequest() {
+  if (!state.profile) return;
+  const pending = state.receivedRequests.filter(id => !state.connections.find(c => c.id === id));
+  if (pending.length >= 2) return;
+  const prob = pending.length === 0 ? 0.8 : 0.3;
+  if (Math.random() > prob) return;
+  const user = state.profile;
+  const isFree = (p) =>
+    !state.receivedRequests.includes(p.id) &&
+    !state.connections.find(c => c.id === p.id) &&
+    !state.sentRequests.includes(p.id);
+  const isPlausible = (p) => {
+    if (!isFree(p)) return false;
+    if (!userVisibleToCandidate(user, p)) return false;
+    if (!candidateVisibleToSearcher(user, p)) return false;
+    const { score } = scoreMatch(user, p);
+    return score >= 50;
+  };
+  // First try candidates who already pass everything; otherwise pick any free
+  // candidate and mutate them so they match. That way the pool never dries up.
+  let eligible = DUMMY_PROFILES.filter(p =>
+    !state.dismissed.includes(p.id) && isPlausible(p));
+  let picked;
+  if (eligible.length > 0) {
+    picked = eligible[Math.floor(Math.random() * eligible.length)];
+  } else {
+    const fallback = DUMMY_PROFILES.filter(p => !state.dismissed.includes(p.id) && isFree(p));
+    const pool = fallback.length > 0 ? fallback
+                : (regenerateFromDismissed()
+                    ? DUMMY_PROFILES.filter(p => isFree(p))
+                    : []);
+    if (pool.length === 0) return;
+    picked = pool[Math.floor(Math.random() * pool.length)];
+    ensureMustHaveMatch(picked, user);
+  }
+  state.receivedRequests.push(picked.id);
+  state.activeOverrides = state.activeOverrides || {};
+  state.activeOverrides[picked.id] = Date.now();
+  saveState();
+  updateBadges();
+}
+
+// Count visible suggested matches (same filtering as renderMatches).
+function visibleSuggestedCount() {
+  if (!state.profile) return 0;
+  const all = getMatches();
+  const visible = all.filter(m => {
+    const id = m.profile.id;
+    if (state.connections.find(c => c.id === id)) return false;
+    if (state.receivedRequests.includes(id)) return false;
+    if (!state.showDismissed && state.dismissed.includes(id)) return false;
+    return true;
+  });
+  return applyFilters(visible).length;
+}
+
+// Mutate a candidate in place so that they pass every must-have gate (both the
+// user's Definite search prefs and the candidate's own must-match visibility).
+// Used when the pool runs thin so revealed / simulated profiles are always
+// actually visible to the user — no "useless" cards sitting hidden forever.
+function ensureMustHaveMatch(candidate, user) {
+  if (!candidate || !user) return;
+  const visibility = visibilityOf(candidate);
+  const prefs = searchPrefs;
+
+  // Grade
+  if ((prefs.grade === 'definite' || visibility.grade === 'must')
+      && candidate.grade !== user.grade) {
+    candidate.grade = user.grade;
+  }
+
+  // Directorates — ensure at least one overlap
+  const dirGate = prefs.directorates === 'definite' || visibility.directorates === 'must';
+  if (dirGate && !directorateOverlapAny(user.directorates, candidate.directorates)) {
+    const userRealDirs = (user.directorates || []).filter(d => d !== 'Open to any');
+    if (userRealDirs.length > 0) {
+      // Keep candidate's first directorate for some variety, add one of user's.
+      const kept = (candidate.directorates || []).filter(d => d !== 'Open to any').slice(0, 1);
+      candidate.directorates = Array.from(new Set([userRealDirs[0], ...kept]));
+    } else if (!(candidate.directorates || []).includes('Open to any')) {
+      candidate.directorates = [...(candidate.directorates || []), 'Open to any'];
+    }
+  }
+
+  // Location (only if user has set it to Definite or candidate requires it as Must)
+  const locGate = prefs.location === 'definite' || visibility.location === 'must';
+  if (locGate && candidate.location !== user.location) {
+    candidate.location = user.location;
+    candidate.overseas = user.overseas || '';
+  }
+
+  // Days pattern — make it at least passably complementary (score >= 0.3)
+  const daysGate = prefs.days === 'definite' || visibility.days === 'must';
+  if (daysGate && dayComplementarityScore(user.days, candidate.days) < 0.3) {
+    const newDays = {};
+    DAYS_OF_WEEK.forEach(d => {
+      const u = (user.days || {})[d] || 'non';
+      newDays[d] = u === 'full' ? 'non' : u === 'non' ? 'full' : 'flexible';
+    });
+    candidate.days = newDays;
+  }
+}
+
+// When the hidden pool has no eligible candidates to reveal, recycle any
+// previously-dismissed profiles back into the hidden pool so the demo feels
+// replenishing rather than running out.
+function regenerateFromDismissed() {
+  const dismissed = state.dismissed || [];
+  if (dismissed.length === 0) return false;
+  state.hiddenSuggested = [...(state.hiddenSuggested || []), ...dismissed];
+  state.dismissed = [];
+  return true;
+}
+
+function eligibleForReveal(ids, user) {
+  return (ids || []).filter(id => {
+    const p = DUMMY_PROFILES.find(x => x.id === id);
+    if (!p) return false;
+    return candidateVisibleToSearcher(user, p) && candidateSatisfiesSearcherGates(user, p, searchPrefs);
+  });
+}
+
+function maybeRevealSuggestedMatch() {
+  if (!state.profile) return;
+  const visible = visibleSuggestedCount();
+  // Probability table: 0→100%, 1→75%, 2→50%, 3→25%, 4+→30% (keep chance alive
+  // so users who keep clicking can still grow the list).
+  const probTable = [1.0, 0.75, 0.5, 0.25];
+  const prob = visible < probTable.length ? probTable[visible] : 0.3;
+  const user = state.profile;
+  let hidden = state.hiddenSuggested || [];
+  if (hidden.length === 0) {
+    if (!regenerateFromDismissed()) return;
+    hidden = state.hiddenSuggested || [];
+  }
+  if (hidden.length === 0) return;
+  if (Math.random() > prob) return;
+  // Prefer a profile that already passes the gates; otherwise pick any hidden
+  // profile and mutate them so they do — no useless invisible cards left over.
+  const user_ = user;
+  const already = eligibleForReveal(hidden, user_);
+  const pickedId = already.length > 0
+    ? already[Math.floor(Math.random() * already.length)]
+    : hidden[Math.floor(Math.random() * hidden.length)];
+  const picked = DUMMY_PROFILES.find(x => x.id === pickedId);
+  if (!picked) return;
+  ensureMustHaveMatch(picked, user_);
+  state.hiddenSuggested = hidden.filter(id => id !== pickedId);
+  saveState();
+}
+
+document.getElementById('refreshSearchBtn').addEventListener('click', () => {
+  const btn = document.getElementById('refreshSearchBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+    maybeAddSimulatedRequest();
+    maybeRevealSuggestedMatch();
+    renderMatches();
+  }, 500);
+});
 
 document.getElementById('refreshBtn').addEventListener('click', () => {
   const btn = document.getElementById('refreshBtn');
@@ -1410,6 +1698,7 @@ if (state.profile) {
 rehydrateTimers();
 updateBadges();
 updateCompleteness();
+renderConnectionBanner();
 
 // ─── Privacy modal ────────────────────────────────────────────────────────────
 
