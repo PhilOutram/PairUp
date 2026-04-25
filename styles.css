@@ -580,8 +580,8 @@ body {
 .btn-save { padding: 10px 22px; background: var(--btn-primary); color: var(--btn-primary-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn-save:hover:not(:disabled) { background: var(--btn-primary-hover); }
 .btn-save:disabled { background: #c7d5e5; color: #eef3f9; cursor: not-allowed; }
-.btn-danger-soft { padding: 10px 16px; background: transparent; color: #A32D2D; border: 1px solid #F09595; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.btn-danger-soft:hover { background: #FCEBEB; }
+.btn-danger-soft { padding: 10px 16px; background: #A32D2D; color: #fff; border: 1px solid #A32D2D; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-danger-soft:hover { background: #7d2222; border-color: #7d2222; }
 .save-status { margin-top: 10px; font-size: 13px; font-weight: 600; display: none; padding: 8px 12px; border-radius: 8px; }
 .save-status.ok { background: #EAF3DE; color: #27500A; }
 .save-status.error { background: #FCEBEB; color: #A32D2D; }
