@@ -4,7 +4,7 @@
 
 This file is the single source of truth for the PairUp prototype.
 
-> **Current version: v1.13** (post user-testing round, April 2026). The section
+> **Current version: v1.14** (post user-testing round, April 2026). The section
 > immediately below supersedes the large "19 changes" specification further down
 > the page where they conflict. The older spec is kept as historical context only.
 
