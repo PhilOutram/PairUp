@@ -175,6 +175,20 @@ function directorateOverlapAny(userDirs, candDirs) {
   return u.some(d => c.includes(d));
 }
 
+// Directorate overlap is always at least 50% once gating has passed (the
+// gate guarantees at least one shared directorate, so a "minimum" match
+// is the floor, not a partial fail). The remaining 50% is split evenly
+// across the user's *additional* directorate choices, so e.g. with 3
+// chosen and 2 matched the score is 50 + (1/2)*50 = 75%.
+function directorateScorePercent(userDirs, sharedCount) {
+  if (sharedCount <= 0) return 0;
+  const userTotal = (userDirs || []).filter(d => d !== ANY_DIR).length;
+  if (userTotal <= 1) return 50;
+  const extras = userTotal - 1;
+  const extrasMatched = Math.max(0, sharedCount - 1);
+  return 50 + (Math.min(extrasMatched, extras) / extras) * 50;
+}
+
 function rankScore(user, candidate, prefs) {
   prefs = prefs || searchPrefs;
   let score = 0;
@@ -192,12 +206,23 @@ function rankScore(user, candidate, prefs) {
   });
 
   const sharedDirs = sharedDirectorates(user.directorates, candidate.directorates);
-  const dirPts = Math.min(sharedDirs.length * 7, 20);
+  const userDirCount = (user.directorates || []).filter(d => d !== ANY_DIR).length;
+  const dirPct = directorateScorePercent(user.directorates, sharedDirs.length);
+  const dirPts = Math.round((dirPct / 100) * 20);
   score += dirPts;
+  let dirNote;
+  if (sharedDirs.length === 0) {
+    dirNote = 'No overlap';
+  } else if (userDirCount <= 1) {
+    dirNote = sharedDirs[0] || 'Open match';
+  } else {
+    dirNote = `${sharedDirs.length} of ${userDirCount} shared`;
+  }
   breakdown.push({
     label: 'Directorate overlap',
     score: dirPts, max: 20,
-    note: sharedDirs.length > 0 ? sharedDirs.slice(0, 2).join(', ') : 'Minimum overlap',
+    note: dirNote,
+    fillOverride: sharedDirs.length > 0 ? 'fill-good' : null,
   });
 
   const ageDays = (Date.now() - (candidate.lastActive || 0)) / 86400000;
@@ -664,7 +689,8 @@ function openScoreModal(id) {
 
   const rows = result.breakdown.map(b => {
     const barPct = Math.round((b.score / b.max) * 100);
-    const fillClass = barPct >= 70 ? 'fill-good' : barPct >= 30 ? 'fill-ok' : 'fill-low';
+    const fillClass = b.fillOverride
+      || (barPct >= 70 ? 'fill-good' : barPct >= 30 ? 'fill-ok' : 'fill-low');
     return `
       <div class="score-row">
         <span class="score-row-label">${b.label}</span>
