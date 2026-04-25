@@ -344,7 +344,8 @@
           <div class="empty-sub">Fill in your profile so we can find your best job share matches.</div>
           <button class="btn-primary-sm" onclick="switchTab('profile')">Go to my profile</button>
         </div>
-        <div id="matchesContent" class="tab-panel" style="display:none">
+        <div id="matchesContent" style="display:none">
+          <div class="tab-panel matches-header-panel">
           <div class="matches-top-row">
             <div class="matches-top-title-row">
               <div class="matches-top-title">Potential matches</div>
@@ -453,6 +454,7 @@
               </div>
             </div>
           </div>
+          </div>
 
           <div class="section-label-row">
             <div class="section-label" id="suggestedLabel">Your matches</div>
@@ -495,7 +497,7 @@
           </div>
 
           <div id="matchCards"></div>
-          <div id="noMatches" class="empty-state" style="display:none">
+          <div id="noMatches" class="empty-state tab-panel" style="display:none">
             <div class="empty-icon">💡</div>
             <div class="empty-title">No matches found with your current criteria</div>
             <div class="empty-sub">Try changing Grade or Directorates from &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in &ldquo;How I want to find matches&rdquo; above &mdash; this will show a wider set of potential partners.</div>
