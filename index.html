@@ -19,7 +19,8 @@
         </div>
         <span class="brand-tag">Job share matcher</span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div class="header-actions">
+        <button class="version-btn" id="versionBtn" title="What's new in this version">v1.13</button>
         <button class="privacy-btn" id="privacyBtn" title="Privacy and data policy">
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
             <path d="M7 1.5L2 3.5v3.5c0 3 2.2 5.5 5 6 2.8-.5 5-3 5-6V3.5L7 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
@@ -57,14 +58,21 @@
         My profile
       </button>
       <button class="nav-tab" data-tab="matches">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 2.5C5.5 1 3 1.5 2 3.5S2 8 7 11.5C12 8 12 6 11 4s-2.5-3-4-2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        Matches
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <circle cx="4.5" cy="7" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="9.5" cy="7" r="2.2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M6.7 7h0.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Potential matches
         <span class="tab-badge" id="matchBadge" style="display:none"></span>
       </button>
-      <button class="nav-tab" data-tab="connections">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="4" cy="5" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="5" r="2" stroke="currentColor" stroke-width="1.4"/><path d="M1 12c0-1.66 1.34-3 3-3s3 1.34 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M7 12c0-1.66 1.34-3 3-3s3 1.34 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        Connected
-        <span class="tab-badge amber" id="connBadge" style="display:none"></span>
+      <button class="nav-tab" data-tab="guidance">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M5.4 5.4a1.6 1.6 0 0 1 3.2 0.2c0 1.1-1.6 1.2-1.6 2.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+          <circle cx="7" cy="10" r="0.7" fill="currentColor"/>
+        </svg>
+        Guidance
       </button>
     </nav>
   </header>
@@ -75,8 +83,16 @@
     <section id="tab-profile" class="tab-content active">
       <div class="tab-inner">
         <div class="page-intro">
-          <h1>Your job share profile</h1>
-          <p>Select what fits you. Potential matches see your name and preferences.</p>
+          <div class="page-intro-row">
+            <h1>Your job share profile</h1>
+            <button type="button" class="btn-test-fill" id="testFillBtn" title="Populate all fields with sensible dummy data for testing">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;">
+                <path d="M6 1.5v4.5l3 1.5M6 10.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Fill with test data
+            </button>
+          </div>
+          <p>Select what fits you. Everything you enter on this page can be seen by your potential matches.</p>
         </div>
 
         <div class="profile-completeness">
@@ -84,106 +100,228 @@
           <span class="completeness-label" id="complLabel">Profile incomplete</span>
         </div>
 
-        <div class="form-section">
-          <div class="form-label">Your name <span class="required">*</span></div>
-          <input type="text" id="userName" class="text-input" placeholder="e.g. A. Smith (visible to matches)" maxlength="40">
+        <div class="form-group">
+          <div class="form-group-header">
+            <div class="form-group-title">Required info</div>
+            <div class="form-group-sub">The essentials we use to match you.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Your name <span class="required">*</span></div>
+            <input type="text" id="userName" class="text-input" placeholder="e.g. A. Smith (visible to matches)" maxlength="40" autocomplete="name">
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Grade <span class="required">*</span></div>
+            <div class="chip-row" id="gradeChips">
+              <button class="chip" data-val="AA/AO">AA/AO</button>
+              <button class="chip" data-val="EO">EO</button>
+              <button class="chip" data-val="HEO">HEO</button>
+              <button class="chip" data-val="SEO">SEO</button>
+              <button class="chip" data-val="G7">G7</button>
+              <button class="chip" data-val="G6">G6</button>
+              <button class="chip" data-val="SCS1">SCS1</button>
+              <button class="chip" data-val="SCS2">SCS2</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Directorates / areas you'd consider <span class="required">*</span></div>
+            <div class="form-hint">Pick &ldquo;Match to any&rdquo; if you don&rsquo;t mind, or don&rsquo;t want to say.</div>
+            <div class="chip-row" id="dirChips">
+              <button class="chip chip-anyoption" data-val="Match to any">Match to any</button>
+              <button class="chip" data-val="Economic & Trade">Economic &amp; Trade</button>
+              <button class="chip" data-val="Climate & Environment">Climate &amp; Environment</button>
+              <button class="chip" data-val="Security & Defence">Security &amp; Defence</button>
+              <button class="chip" data-val="Consular">Consular</button>
+              <button class="chip" data-val="HR & People">HR &amp; People</button>
+              <button class="chip" data-val="Communications">Communications</button>
+              <button class="chip" data-val="Finance">Finance</button>
+              <button class="chip" data-val="Digital & Data">Digital &amp; Data</button>
+              <button class="chip" data-val="Programme Delivery">Programme Delivery</button>
+              <button class="chip" data-val="Legal & Governance">Legal &amp; Governance</button>
+              <button class="chip" data-val="Corporate Services">Corporate Services</button>
+              <button class="chip" data-val="Overseas Network">Overseas Network</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Days I work <span class="required">*</span></div>
+            <div class="form-hint">For each day, pick how you currently work. Flex = open to negotiate.</div>
+            <div class="day-matrix" id="dayMatrix">
+            <div class="day-row" data-day="Mon">
+              <div class="day-row-header">Mon</div>
+              <button class="day-opt" data-day="Mon" data-val="full">Full</button>
+              <button class="day-opt" data-day="Mon" data-val="part">Part</button>
+              <button class="day-opt" data-day="Mon" data-val="non">Non</button>
+              <button class="day-opt" data-day="Mon" data-val="flexible">Flex</button>
+            </div>
+            <div class="day-row" data-day="Tue">
+              <div class="day-row-header">Tue</div>
+              <button class="day-opt" data-day="Tue" data-val="full">Full</button>
+              <button class="day-opt" data-day="Tue" data-val="part">Part</button>
+              <button class="day-opt" data-day="Tue" data-val="non">Non</button>
+              <button class="day-opt" data-day="Tue" data-val="flexible">Flex</button>
+            </div>
+            <div class="day-row" data-day="Wed">
+              <div class="day-row-header">Wed</div>
+              <button class="day-opt" data-day="Wed" data-val="full">Full</button>
+              <button class="day-opt" data-day="Wed" data-val="part">Part</button>
+              <button class="day-opt" data-day="Wed" data-val="non">Non</button>
+              <button class="day-opt" data-day="Wed" data-val="flexible">Flex</button>
+            </div>
+            <div class="day-row" data-day="Thu">
+              <div class="day-row-header">Thu</div>
+              <button class="day-opt" data-day="Thu" data-val="full">Full</button>
+              <button class="day-opt" data-day="Thu" data-val="part">Part</button>
+              <button class="day-opt" data-day="Thu" data-val="non">Non</button>
+              <button class="day-opt" data-day="Thu" data-val="flexible">Flex</button>
+            </div>
+            <div class="day-row" data-day="Fri">
+              <div class="day-row-header">Fri</div>
+              <button class="day-opt" data-day="Fri" data-val="full">Full</button>
+              <button class="day-opt" data-day="Fri" data-val="part">Part</button>
+              <button class="day-opt" data-day="Fri" data-val="non">Non</button>
+              <button class="day-opt" data-day="Fri" data-val="flexible">Flex</button>
+            </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Location <span class="required">*</span></div>
+            <div class="chip-row" id="locChips">
+              <button class="chip chip-single" data-val="London - KCS">London – KCS</button>
+              <button class="chip chip-single" data-val="East Kilbride">East Kilbride</button>
+              <button class="chip chip-single" data-val="Remote">Remote</button>
+              <button class="chip chip-single" data-val="Overseas">Overseas</button>
+            </div>
+            <div id="overseasWrap" style="display:none; margin-top:10px;">
+              <select id="overseasSelect" class="select-input">
+                <option value="">Select country office...</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="form-section">
-          <div class="form-label">Grade <span class="required">*</span></div>
-          <div class="chip-row" id="gradeChips">
-            <button class="chip" data-val="AA/AO">AA/AO</button>
-            <button class="chip" data-val="EO">EO</button>
-            <button class="chip" data-val="HEO">HEO</button>
-            <button class="chip" data-val="SEO">SEO</button>
-            <button class="chip" data-val="G7">G7</button>
-            <button class="chip" data-val="G6">G6</button>
-            <button class="chip" data-val="SCS1">SCS1</button>
-            <button class="chip" data-val="SCS2">SCS2</button>
+        <div class="form-group">
+          <div class="form-group-header">
+            <div class="form-group-title-row">
+              <div>
+                <div class="form-group-title">Optional info</div>
+                <div class="form-group-sub">Everything in this section is optional &mdash; leave blank anything you&rsquo;d rather not share. Whatever you do fill in becomes visible on your profile to potential matches.</div>
+              </div>
+              <button type="button" class="btn-help" id="optionalHelpBtn" title="Things to consider before sharing">
+                <span aria-hidden="true">?</span>
+                <span class="sr-only">Things to consider before sharing</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Availability <span class="optional-tag">Optional</span></div>
+            <div class="form-hint">What are you currently looking for? e.g. &lsquo;Looking for roles in stage 2&rsquo;, &lsquo;End of tour June, seeking partner for next posting&rsquo;.</div>
+            <input type="text" id="userAvailability" class="text-input" maxlength="200" placeholder="What are you currently looking for?">
+            <div class="char-count"><span id="availabilityCount">0</span> / 200</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">FTE or hours per week <span class="optional-tag">Optional</span></div>
+            <div class="form-hint">The amount of time per week you&rsquo;d prefer to work, e.g. &lsquo;0.6 FTE&rsquo;, &lsquo;22 hours&rsquo;, &lsquo;3 days&rsquo;.</div>
+            <input type="text" id="userFte" class="text-input" maxlength="30" placeholder="e.g. 0.6 FTE">
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Is your working pattern negotiable? <span class="optional-tag">Optional</span></div>
+            <div class="chip-row" id="negotiableChips">
+              <button class="chip chip-single" data-val="yes">Yes</button>
+              <button class="chip chip-single" data-val="possibly">Possibly</button>
+              <button class="chip chip-single" data-val="no">No</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Additional working pattern information <span class="optional-tag">Optional</span></div>
+            <div class="form-hint">e.g. &lsquo;I work 6 hours on Wednesday from home&rsquo;, &lsquo;Can be flexible around school hours&rsquo;, &lsquo;Prefer not to work school holidays&rsquo;.</div>
+            <textarea id="userPatternNotes" class="text-input text-area" rows="3" maxlength="400" placeholder="Anything the day grid above can&#39;t capture"></textarea>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Skills and experience <span class="optional-tag">Optional</span></div>
+            <div class="form-hint">A short summary to help potential partners assess fit &mdash; e.g. &lsquo;7 years policy, Middle East specialism, programme management experience&rsquo;. Max 50 words.</div>
+            <textarea id="userSkills" class="text-input text-area" rows="3" placeholder="Short summary of skills / experience"></textarea>
+            <div class="char-count"><span id="skillsWordCount">50</span> words remaining</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Other information, including working style <span class="optional-tag">Optional</span></div>
+            <div class="form-hint">Anything else that might help a potential partner &mdash; overseas plans, specialist skills, languages, specific roles you have in mind, how you like to work (e.g. clean handover vs. close collaboration), whether you&rsquo;re already in a role and looking for a partner to join you.</div>
+            <textarea id="userOtherInfo" class="text-input text-area" rows="4" maxlength="800" placeholder="Anything else that could help a partner, including how you like to work"></textarea>
           </div>
         </div>
 
-        <div class="form-section">
-          <div class="form-label">Roles you'd consider <span class="required">*</span></div>
-          <div class="form-hint">Select your grade first — roles typically for higher grades are dashed but can still be selected. Click a group to expand it.</div>
-          <div class="accordion" id="roleAccordion"></div>
-          <div class="selected-roles-summary" id="selectedRolesSummary" style="display:none">
-            <span class="summary-label">Selected:</span>
-            <div class="summary-tags" id="summaryTags"></div>
+        <div class="collapsible-section" id="visibilitySection">
+          <button class="collapsible-header" id="visibilityToggle" type="button">
+            <span class="collapsible-title">Who can find me</span>
+            <span class="collapsible-sub">Control when your profile appears in search results</span>
+            <span class="collapsible-arrow">▸</span>
+          </button>
+          <div class="collapsible-body" id="visibilityBody">
+            <p class="collapsible-intro">
+              <strong>Must match</strong> = your profile only shows to people who meet this criterion.<br>
+              <strong>Open</strong> = your profile is visible to anyone regardless of this criterion.
+            </p>
+            <div class="visibility-grid" id="visibilityGrid">
+              <div class="visibility-row" data-key="grade">
+                <div class="visibility-label">Grade</div>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" data-vis="grade" data-val="must">Must match</button>
+                  <button type="button" class="toggle-btn" data-vis="grade" data-val="open">Open</button>
+                </div>
+              </div>
+              <div class="visibility-row" data-key="directorates">
+                <div class="visibility-label">Directorates</div>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" data-vis="directorates" data-val="must">Must match</button>
+                  <button type="button" class="toggle-btn" data-vis="directorates" data-val="open">Open</button>
+                </div>
+              </div>
+              <div class="visibility-row" data-key="location">
+                <div class="visibility-label">Location</div>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" data-vis="location" data-val="must">Must match</button>
+                  <button type="button" class="toggle-btn" data-vis="location" data-val="open">Open</button>
+                </div>
+              </div>
+              <div class="visibility-row" data-key="days">
+                <div class="visibility-label">Days pattern</div>
+                <div class="toggle-row">
+                  <button type="button" class="toggle-btn" data-vis="days" data-val="must">Must complement</button>
+                  <button type="button" class="toggle-btn" data-vis="days" data-val="open">Open</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="form-section">
-          <div class="form-label">Directorates / areas you'd consider <span class="required">*</span></div>
-          <div class="chip-row" id="dirChips">
-            <button class="chip" data-val="Economic & Trade">Economic &amp; Trade</button>
-            <button class="chip" data-val="Climate & Environment">Climate &amp; Env</button>
-            <button class="chip" data-val="Security & Defence">Security &amp; Defence</button>
-            <button class="chip" data-val="Consular">Consular</button>
-            <button class="chip" data-val="HR & People">HR &amp; People</button>
-            <button class="chip" data-val="Communications">Communications</button>
-            <button class="chip" data-val="Finance">Finance</button>
-            <button class="chip" data-val="Digital & Data">Digital &amp; Data</button>
-            <button class="chip" data-val="Programme Delivery">Programme Delivery</button>
-            <button class="chip" data-val="Legal & Governance">Legal &amp; Governance</button>
-            <button class="chip" data-val="Corporate Services">Corporate Services</button>
-            <button class="chip" data-val="Overseas Network">Overseas Network</button>
-            <button class="chip" data-val="Open to any">Open to any</button>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-label">Days I work <span class="required">*</span></div>
-          <div class="form-hint">We'll look for complementary patterns to cover the full week.</div>
-          <div class="days-grid" id="dayChips">
-            <button class="chip day-chip" data-val="Mon">Mon</button>
-            <button class="chip day-chip" data-val="Tue">Tue</button>
-            <button class="chip day-chip" data-val="Wed">Wed</button>
-            <button class="chip day-chip" data-val="Thu">Thu</button>
-            <button class="chip day-chip" data-val="Fri">Fri</button>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-label">Working style <span class="required">*</span></div>
-          <div class="style-grid" id="styleChips">
-            <button class="style-card chip-single" data-val="clean">
-              <div class="style-title">Clean handover</div>
-              <div class="style-desc">We each own our days, minimal overlap needed</div>
-            </button>
-            <button class="style-card chip-single" data-val="collaborative">
-              <div class="style-title">Close collaboration</div>
-              <div class="style-desc">Regular catch-ups, shared ownership of work</div>
-            </button>
-            <button class="style-card chip-single" data-val="flexible">
-              <div class="style-title">Flexible</div>
-              <div class="style-desc">Happy to adapt to whoever I partner with</div>
-            </button>
-            <button class="style-card chip-single" data-val="unsure">
-              <div class="style-title">Not sure yet</div>
-              <div class="style-desc">Open to discussing what works best</div>
-            </button>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-label">Location</div>
-          <div class="chip-row" id="locChips">
-            <button class="chip chip-single" data-val="London - KCS">London – KCS</button>
-            <button class="chip chip-single" data-val="East Kilbride">East Kilbride</button>
-            <button class="chip chip-single" data-val="Remote">Remote</button>
-            <button class="chip chip-single" data-val="Overseas">Overseas</button>
-          </div>
-          <div id="overseasWrap" style="display:none; margin-top:10px;">
-            <select id="overseasSelect" class="select-input">
-              <option value="">Select country office...</option>
-            </select>
-          </div>
+        <div class="consent-row">
+          <label class="consent-box">
+            <input type="checkbox" id="consentCheck">
+            <span class="consent-text">
+              I understand that everything I&rsquo;ve entered on this page will be visible to my potential matches.
+              Any field in the <strong>Optional info</strong> section can be left blank.
+            </span>
+          </label>
         </div>
 
         <div class="form-actions">
-          <button class="btn-save" id="saveProfile">Save profile &amp; find matches</button>
-          <button class="btn-danger-soft" id="deleteProfile" style="display:none">Delete my profile</button>
+          <button class="btn-save" id="saveProfile" disabled>Save profile &amp; find matches</button>
+          <div class="delete-group" id="deleteGroup" style="display:none">
+            <button class="btn-danger-soft" id="deleteProfile">Delete my profile</button>
+            <button type="button" class="btn-help btn-help-danger" id="deleteHelpBtn" title="What does Delete do?">
+              <span aria-hidden="true">?</span>
+              <span class="sr-only">What does deleting my profile do?</span>
+            </button>
+          </div>
         </div>
         <div class="save-status" id="saveStatus"></div>
       </div>
@@ -192,20 +330,124 @@
     <!-- MATCHES TAB -->
     <section id="tab-matches" class="tab-content">
       <div class="tab-inner">
-        <div id="matchesNoProfile" class="empty-state" style="display:none">
+        <div id="matchesNoProfile" class="empty-state tab-panel" style="display:none">
           <div class="empty-icon">🔍</div>
           <div class="empty-title">Complete your profile first</div>
           <div class="empty-sub">Fill in your profile so we can find your best job share matches.</div>
           <button class="btn-primary-sm" onclick="switchTab('profile')">Go to my profile</button>
         </div>
-        <div id="matchesContent" style="display:none">
-          <div id="inboundSection" style="display:none">
-            <div class="section-label">Requests for you</div>
-            <div id="inboundCards"></div>
+        <div id="matchesContent" class="tab-panel" style="display:none">
+          <div class="matches-top-row">
+            <div class="matches-top-title">Potential matches</div>
+            <button class="btn-refresh-search" id="refreshSearchBtn" type="button" title="Re-run the search with your current settings">
+              <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
+                <path d="M1.5 7.5a6 6 0 1 0 6-6 6 6 0 0 0-4.24 1.76" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M1.5 3v4.5H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
+
+          <div class="matches-intro">
+            These are people whose profiles could complement yours. Use <strong>Email</strong> to reach out,
+            or <strong>Dismiss</strong> to hide a profile from your list.
+            Click <em>How matching works</em> below or any match percentage to see the logic behind the score.
+          </div>
+
+          <div class="collapsible-section prefs-section" id="prefsSection">
+            <button class="collapsible-header" id="prefsToggle" type="button">
+              <span class="collapsible-title">How I want to find matches</span>
+              <span class="collapsible-sub">Set how important each criterion is to your search</span>
+              <span class="prefs-count" id="prefsCount" title="Profiles your current settings reveal">&mdash;</span>
+              <span class="collapsible-arrow">▸</span>
+            </button>
+            <div class="collapsible-body" id="prefsBody">
+              <p class="collapsible-intro">
+                <span class="prefs-dot prefs-definite"></span> <strong>Definite</strong> = only show profiles that match this (hard gate)<br>
+                <span class="prefs-dot prefs-preferred"></span> <strong>Preferred</strong> = show all, rank matching profiles higher<br>
+                <span class="prefs-dot prefs-off"></span> <strong>Not relevant</strong> = ignore this when searching
+              </p>
+              <div class="visibility-grid">
+                <div class="visibility-row" data-key="grade">
+                  <div class="visibility-label">Grade</div>
+                  <div class="toggle-row toggle-row-3">
+                    <button type="button" class="toggle-btn" data-pref="grade" data-val="definite">Definite</button>
+                    <button type="button" class="toggle-btn" data-pref="grade" data-val="preferred">Preferred</button>
+                    <button type="button" class="toggle-btn" data-pref="grade" data-val="irrelevant">Not relevant</button>
+                  </div>
+                </div>
+                <div class="visibility-row" data-key="directorates">
+                  <div class="visibility-label">Directorates</div>
+                  <div class="toggle-row toggle-row-3">
+                    <button type="button" class="toggle-btn" data-pref="directorates" data-val="definite">Definite</button>
+                    <button type="button" class="toggle-btn" data-pref="directorates" data-val="preferred">Preferred</button>
+                    <button type="button" class="toggle-btn" data-pref="directorates" data-val="irrelevant">Not relevant</button>
+                  </div>
+                </div>
+                <div class="visibility-row" data-key="location">
+                  <div class="visibility-label">Location</div>
+                  <div class="toggle-row toggle-row-3">
+                    <button type="button" class="toggle-btn" data-pref="location" data-val="definite">Definite</button>
+                    <button type="button" class="toggle-btn" data-pref="location" data-val="preferred">Preferred</button>
+                    <button type="button" class="toggle-btn" data-pref="location" data-val="irrelevant">Not relevant</button>
+                  </div>
+                </div>
+                <div class="visibility-row" data-key="days">
+                  <div class="visibility-label">Days pattern</div>
+                  <div class="toggle-row toggle-row-3">
+                    <button type="button" class="toggle-btn" data-pref="days" data-val="definite">Definite</button>
+                    <button type="button" class="toggle-btn" data-pref="days" data-val="preferred">Preferred</button>
+                    <button type="button" class="toggle-btn" data-pref="days" data-val="irrelevant">Not relevant</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="collapsible-section how-section" id="howSection">
+            <button class="collapsible-header" id="howToggle" type="button">
+              <span class="collapsible-title">How matching works</span>
+              <span class="collapsible-sub">Gates, ranking, and what the % score means</span>
+              <span class="collapsible-arrow">▸</span>
+            </button>
+            <div class="collapsible-body" id="howBody">
+              <p class="how-lead">PairUp shows people whose profiles could work alongside yours. There are two steps:</p>
+              <div class="how-step">
+                <div class="how-step-head">1. Gating &mdash; who appears at all</div>
+                <div class="how-step-body">
+                  <p>A profile only appears on your list if <em>both</em> of these are true:</p>
+                  <ul>
+                    <li>Your profile passes <strong>their</strong> &ldquo;Who can find me&rdquo; rules. (If they&rsquo;ve set Grade to &ldquo;Must match&rdquo;, you won&rsquo;t see them unless your grade matches.)</li>
+                    <li>Their profile passes <strong>your</strong> &ldquo;How I want to find matches&rdquo; settings. (Defaults: Grade and Directorate are &ldquo;Definite&rdquo;, so only same-grade people with a shared directorate appear.)</li>
+                  </ul>
+                  <p>Change &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in <em>How I want to find matches</em> to see a wider set.</p>
+                </div>
+              </div>
+              <div class="how-step">
+                <div class="how-step-head">2. Ranking &mdash; the % score</div>
+                <div class="how-step-body">
+                  <p>Profiles that pass the gates are ranked 0&ndash;100 %. The score combines:</p>
+                  <ul>
+                    <li><strong>Day pattern complementarity</strong> &mdash; up to 40 pts. Your working days and theirs are compared day by day; &ldquo;full + non&rdquo; scores highest, &ldquo;full + full&rdquo; scores zero.</li>
+                    <li><strong>Extra directorate overlap</strong> &mdash; up to 20 pts, for each directorate shared beyond the first.</li>
+                    <li><strong>Recency</strong> &mdash; up to 20 pts. Profiles active in the last two weeks score full marks; nothing for &gt; 6 months.</li>
+                    <li><strong>Same location</strong> &mdash; 10 pts.</li>
+                    <li><strong>Preferred bonuses</strong> &mdash; up to 30 pts, from anything you&rsquo;ve set to &ldquo;Preferred&rdquo;.</li>
+                    <li><strong>Negotiable pattern</strong> &mdash; up to 3 pts.</li>
+                  </ul>
+                  <p class="how-note">
+                    <span class="how-pill how-pill-green">65&ndash;100 %</span> strong fit &middot;
+                    <span class="how-pill how-pill-amber">40&ndash;64 %</span> partial fit &middot;
+                    <span class="how-pill how-pill-red">&lt; 40 %</span> weak fit
+                  </p>
+                  <p>Click any match percentage to see the exact breakdown for that profile.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="section-label-row">
-            <div class="section-label" id="suggestedLabel">Suggested matches</div>
+            <div class="section-label" id="suggestedLabel">Your matches</div>
             <div style="display:flex;align-items:center;gap:8px;">
               <button class="filter-toggle-btn" id="filterToggleBtn">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 2h10M3 6h6M5 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -216,20 +458,7 @@
           </div>
           <div class="filter-bar" id="filterBar">
             <div class="filter-section">
-              <div class="filter-section-label">Grade</div>
-              <div class="filter-chips" id="filterGrade">
-                <button class="filter-chip" data-val="AA/AO">AA/AO</button>
-                <button class="filter-chip" data-val="EO">EO</button>
-                <button class="filter-chip" data-val="HEO">HEO</button>
-                <button class="filter-chip" data-val="SEO">SEO</button>
-                <button class="filter-chip" data-val="G7">G7</button>
-                <button class="filter-chip" data-val="G6">G6</button>
-                <button class="filter-chip" data-val="SCS1">SCS1</button>
-                <button class="filter-chip" data-val="SCS2">SCS2</button>
-              </div>
-            </div>
-            <div class="filter-section">
-              <div class="filter-section-label">Must be able to work these days</div>
+              <div class="filter-section-label">Working these days</div>
               <div class="filter-chips" id="filterDays">
                 <button class="filter-chip" data-val="Mon">Mon</button>
                 <button class="filter-chip" data-val="Tue">Tue</button>
@@ -248,19 +477,11 @@
               </div>
             </div>
             <div class="filter-section">
-              <div class="filter-section-label">Working style (must match)</div>
-              <div class="filter-chips" id="filterStyle">
-                <button class="filter-chip" data-val="clean">Clean handover</button>
-                <button class="filter-chip" data-val="collaborative">Collaborative</button>
-                <button class="filter-chip" data-val="flexible">Flexible</button>
-              </div>
-            </div>
-            <div class="filter-section">
-              <div class="filter-section-label">Minimum match %</div>
-              <div class="filter-chips" id="filterScore">
-                <button class="filter-chip" data-val="40">40%+</button>
-                <button class="filter-chip" data-val="60">60%+</button>
-                <button class="filter-chip selected" data-val="0">All</button>
+              <div class="filter-section-label">Last active</div>
+              <div class="filter-chips" id="filterActive">
+                <button class="filter-chip" data-val="14">Last 2 weeks</button>
+                <button class="filter-chip" data-val="90">Last 3 months</button>
+                <button class="filter-chip" data-val="180">Last 6 months</button>
               </div>
             </div>
           </div>
@@ -268,8 +489,8 @@
           <div id="matchCards"></div>
           <div id="noMatches" class="empty-state" style="display:none">
             <div class="empty-icon">💡</div>
-            <div class="empty-title">No matches found</div>
-            <div class="empty-sub">Try adjusting your filters, or broaden your role and directorate preferences on your profile.</div>
+            <div class="empty-title">No matches found with your current criteria</div>
+            <div class="empty-sub">Try changing Grade or Directorates from &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in &ldquo;How I want to find matches&rdquo; above &mdash; this will show a wider set of potential partners.</div>
           </div>
           <div class="show-dismissed-row" id="showDismissedRow" style="display:none">
             <button class="btn-ghost-small" id="showDismissedBtn">Show hidden profiles</button>
@@ -278,33 +499,57 @@
       </div>
     </section>
 
-    <!-- CONNECTIONS TAB -->
-    <section id="tab-connections" class="tab-content">
+    <!-- GUIDANCE TAB -->
+    <section id="tab-guidance" class="tab-content">
       <div class="tab-inner">
-        <div id="connNoProfile" class="empty-state" style="display:none">
-          <div class="empty-icon">🤝</div>
-          <div class="empty-title">No connections yet</div>
-          <div class="empty-sub">Set up your profile and send connection requests to get started.</div>
-          <button class="btn-primary-sm" onclick="switchTab('profile')">Set up profile</button>
-        </div>
-        <div id="connContent" style="display:none">
-          <div id="newConnBanner" class="new-conn-banner" style="display:none"></div>
-
-          <div id="connectedSection" style="display:none">
-            <div class="section-label">Connected</div>
-            <div id="connectedCards"></div>
+        <div class="tab-panel">
+          <div class="guidance-intro">
+            <h1>Guidance &amp; tips</h1>
+            <p>Making job share work well starts long before your first shared day. These resources walk you through finding the right partner, the conversations to have early, and the practicalities of splitting a role.</p>
           </div>
 
-          <div id="pendingSection" style="display:none">
-            <div class="section-label">Pending — awaiting their response</div>
-            <div id="pendingCards"></div>
+          <div class="guidance-section">
+            <div class="guidance-section-head">Before you match</div>
+            <ul class="guidance-links">
+              <li><a href="#" onclick="return false;">What makes a good job share partner?</a> &mdash; traits to look for beyond working days.</li>
+              <li><a href="#" onclick="return false;">Working styles and how to describe yours</a> &mdash; clean handover vs. close collaboration, and what fits different roles.</li>
+              <li><a href="#" onclick="return false;">FCDO flexible working policy (intranet)</a> &mdash; entitlements, grading, and what your line manager needs to know.</li>
+            </ul>
           </div>
 
-          <div id="connEmptyState" class="empty-state" style="display:none">
-            <div class="empty-icon">🤝</div>
-            <div class="empty-title">No connections yet</div>
-            <div class="empty-sub">Head to Matches to send your first connection request.</div>
-            <button class="btn-primary-sm" onclick="switchTab('matches')">View matches</button>
+          <div class="guidance-section">
+            <div class="guidance-section-head">Things to discuss before you commit</div>
+            <ul class="guidance-links">
+              <li><a href="#" onclick="return false;">Handover practices</a> &mdash; how you&rsquo;ll pass work between you on overlap days.</li>
+              <li><a href="#" onclick="return false;">Decision-making and disagreement</a> &mdash; who makes calls when you&rsquo;re not both in the room.</li>
+              <li><a href="#" onclick="return false;">Leave, cover, and absence</a> &mdash; planning for holidays, sickness, and peak pressures.</li>
+              <li><a href="#" onclick="return false;">Meetings and representation</a> &mdash; how you&rsquo;ll divide stakeholder relationships.</li>
+              <li><a href="#" onclick="return false;">Performance reviews and objectives</a> &mdash; shared vs. individual objectives.</li>
+            </ul>
+          </div>
+
+          <div class="guidance-section">
+            <div class="guidance-section-head">Privacy and what data becomes visible</div>
+            <p class="guidance-paragraph">Anything you enter in the <strong>Required info</strong> and <strong>Optional info</strong> sections on your profile becomes visible to anyone who PairUp shows your profile to. That group is governed by your &ldquo;Who can find me&rdquo; settings on the profile page.</p>
+            <ul class="guidance-bullets">
+              <li><strong>Required info</strong> (name, grade, directorates, days, location) is always shown on your match cards.</li>
+              <li><strong>Optional info</strong> is shown on your full profile view &mdash; matches click &ldquo;Full profile&hellip;&rdquo; to see it.</li>
+              <li><strong>Who can find me</strong> controls apply to everyone. <strong>How I want to find matches</strong> only affects what <em>you</em> see.</li>
+            </ul>
+            <p class="guidance-paragraph">If you&rsquo;re unsure about something sensitive (e.g. overseas posting plans, caring responsibilities), you can always come back and edit your profile later.</p>
+          </div>
+
+          <div class="guidance-section">
+            <div class="guidance-section-head">Support &amp; contact</div>
+            <ul class="guidance-links">
+              <li><a href="mailto:flexible.working@fcdo.gov.uk">flexible.working@fcdo.gov.uk</a> &mdash; the FCDO Flexible Working Network.</li>
+              <li><a href="#" onclick="return false;">Job share success stories</a> &mdash; a collection of FCDO pairings, how they found each other and what works.</li>
+              <li><a href="#" onclick="return false;">Report an issue with PairUp</a> &mdash; if something&rsquo;s wrong with a profile or the tool itself.</li>
+            </ul>
+          </div>
+
+          <div class="guidance-footer">
+            The links above are placeholders &mdash; curated guidance will be added as PairUp rolls out.
           </div>
         </div>
       </div>
@@ -315,6 +560,109 @@
   <!-- Profile / Score modal -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalIfBg(event)">
     <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <!-- What's new / version modal -->
+  <div class="modal-overlay" id="versionOverlay" onclick="closeVersionIfBg(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeVersion()">x</button>
+      <div class="modal-name">What&rsquo;s new</div>
+      <div class="modal-grade-loc">Recent updates to PairUp</div>
+
+      <div class="changelog-entry">
+        <div class="changelog-version">v1.13 &middot; 25 April 2026</div>
+        <ul class="changelog-list">
+          <li>New <strong>Guidance</strong> tab with tips on finding a partner and what data becomes visible.</li>
+          <li>Simplified matches: a single &ldquo;Potential matches&rdquo; list with <strong>Email</strong> and <strong>Dismiss</strong> on each card. The request / accept / connect workflow has been removed.</li>
+          <li><strong>Email</strong> button opens your mail client pre-populated with a short message and your own profile summary.</li>
+          <li>Match cards now only show directorates that overlap with yours.</li>
+          <li>New profiles since your last visit are tagged with a <strong>New</strong> pill.</li>
+          <li>&ldquo;Open to any&rdquo; renamed to <strong>&ldquo;Match to any&rdquo;</strong> and moved to the first directorate chip.</li>
+          <li>Working-style presets removed; describe your style inside &ldquo;Other information&rdquo; instead.</li>
+          <li>Consent checkbox above Save: confirm you understand what is shared.</li>
+          <li>New <strong>How matching works</strong> panel on the matches tab.</li>
+          <li>Mobile-friendly layout pass &mdash; header, cards and toggles all reflow on small screens.</li>
+          <li>Days Pattern visibility label now reads <em>Must Complement</em> (rather than Must Match) to reflect what it does.</li>
+        </ul>
+      </div>
+
+      <div class="changelog-entry">
+        <div class="changelog-version">v1.12 &middot; March 2026</div>
+        <ul class="changelog-list">
+          <li>Per-day full / part / non / flex picker replaces the simpler day chips.</li>
+          <li>&ldquo;Who can find me&rdquo; visibility controls and &ldquo;How I want to find matches&rdquo; search preferences.</li>
+          <li>Hard gates on grade and directorate, with ranking by day complementarity, recency, overlap and location.</li>
+          <li>Profile staleness indicators (active recently / a few months / 6+ months).</li>
+        </ul>
+      </div>
+
+      <div class="changelog-footer">
+        Spotted a bug or have feedback? Email <strong>flexible.working@fcdo.gov.uk</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete-profile help modal -->
+  <div class="modal-overlay" id="deleteHelpOverlay" onclick="closeDeleteHelpIfBg(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeDeleteHelp()">x</button>
+      <div class="modal-name">What happens when you delete your profile?</div>
+      <div class="modal-grade-loc">It is a complete, permanent removal.</div>
+      <div class="modal-section">
+        <div class="modal-section-label">Your data</div>
+        <p class="modal-text">Every field you entered &mdash; name, grade, directorates, days, location, and all of the optional fields (availability, skills, FTE, working pattern notes, other information) &mdash; is permanently removed from PairUp.</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">What other people see</div>
+        <p class="modal-text">Your profile disappears from everyone else&rsquo;s match lists. Anyone who had your profile saved or visible on their screen will no longer see you. There is no archive or recoverable copy.</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">What is kept</div>
+        <p class="modal-text">Nothing about you. Your dismissed-profile list, search preferences and consent flag on this browser are also cleared.</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Coming back</div>
+        <p class="modal-text">You can register again at any time by filling in a new profile &mdash; it just starts fresh.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional-info help modal -->
+  <div class="modal-overlay" id="helpOverlay" onclick="closeHelpIfBg(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeHelp()">x</button>
+      <div class="modal-name">Things to consider before sharing</div>
+      <div class="modal-grade-loc">Everything you enter on this page becomes visible to potential matches.</div>
+      <div class="modal-section">
+        <div class="modal-section-label">Ask yourself</div>
+        <ul class="help-list">
+          <li>Would I be comfortable if a colleague outside my team read this?</li>
+          <li>Is there anything here (e.g. caring responsibilities, health, overseas plans) that&rsquo;s more than I want to share to get a match?</li>
+          <li>Am I giving enough for someone to decide whether to reach out?</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Good to include</div>
+        <ul class="help-list">
+          <li>What you&rsquo;re currently looking for (a role, a team, a type of work).</li>
+          <li>Your working pattern &mdash; the shape of your week, not necessarily the reasons.</li>
+          <li>Skills, experience or specialisms that help a partner size up fit.</li>
+          <li>How you like to work (handover vs. collaboration, meetings, decision-making).</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Think twice before including</div>
+        <ul class="help-list">
+          <li>Sensitive personal circumstances &mdash; share once you&rsquo;re talking to a potential partner, not in your public profile.</li>
+          <li>Information about other colleagues or teams.</li>
+          <li>Anything confidential or not already internally known.</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Remember</div>
+        <p class="modal-text">All optional fields can be left blank. You can edit or delete your profile at any time.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Privacy modal -->
@@ -339,12 +687,12 @@
 
       <div class="privacy-section">
         <div class="privacy-section-label">What this tool is for</div>
-        <p class="privacy-text">PairUp is solely for helping FCDO staff find compatible job share partners. Your profile data &mdash; name, grade, role preferences, working days, style, and location &mdash; is used only for this matching purpose. It will not be used for any other purpose.</p>
+        <p class="privacy-text">PairUp is solely for helping FCDO staff find compatible job share partners. Your profile data is used only for this matching purpose. It will not be used for any other purpose.</p>
       </div>
 
       <div class="privacy-section">
         <div class="privacy-section-label">Who can see your data</div>
-        <p class="privacy-text">Your profile is visible only to other staff who are also registered on PairUp, and only within the app. <strong>No information is shared with HR, line managers, or any other part of the organisation.</strong> Connection details are only exchanged when both parties have mutually expressed interest. The tool administrators can see aggregate statistics (e.g. number of users) but not individual profile contents.</p>
+        <p class="privacy-text">Your profile is visible only to other staff who are also registered on PairUp, and only within the app. Your &ldquo;Who can find me&rdquo; settings control which subset of users can see you. <strong>No information is shared with HR, line managers, or any other part of the organisation.</strong> When you email a potential match, that email is sent from your own mailbox &mdash; PairUp is not involved in the conversation.</p>
       </div>
 
       <div class="privacy-section">
@@ -386,56 +734,37 @@
 
       <div class="privacy-section">
         <div class="privacy-section-label" style="color:#185FA5;">What is PairUp?</div>
-        <p class="privacy-text">PairUp helps FCDO staff find compatible job share partners during the restructure. Finding a job share partner who wants the same role, works complementary days, and has a compatible working style has historically taken months of informal networking. PairUp makes that search systematic, private, and quick.</p>
-        <p class="privacy-text" style="margin-top:8px;">You create a profile with your preferences, the app finds potential matches from other registered staff, and you can signal interest. Contact only happens when both sides opt in.</p>
+        <p class="privacy-text">PairUp helps FCDO staff find compatible job share partners during the restructure. Finding a partner who wants the same role, works complementary days, and has a compatible working style has historically taken months of informal networking. PairUp makes that search systematic, private, and quick.</p>
+        <p class="privacy-text" style="margin-top:8px;">You fill in a profile, PairUp shows you a list of potentially compatible colleagues, and you decide who to reach out to. Contact happens by email, directly between the two of you &mdash; PairUp does not send messages on anyone&rsquo;s behalf or store conversations.</p>
       </div>
 
       <div class="privacy-section">
         <div class="privacy-section-label" style="color:#185FA5;">How matching works</div>
-        <p class="privacy-text">Each potential partner is scored against your profile across five dimensions. Scores are combined into an overall match percentage shown on each card. Click any percentage to see the full breakdown.</p>
-      </div>
-
-      <div class="about-scoring-table">
-        <div class="about-score-row">
-          <div class="about-score-label">Grade compatibility</div>
-          <div class="about-score-bar-wrap"><div class="about-score-bar" style="width:100%;background:#3B6D11;"></div></div>
-          <div class="about-score-weight" id="about-w-grade">40 pts</div>
-          <div class="about-score-note">Same grade = full points. 1 grade apart = reduced score with warning. 2+ grades apart = not shown (job shares require same grade).</div>
-        </div>
-        <div class="about-score-row">
-          <div class="about-score-label">Role fit</div>
-          <div class="about-score-bar-wrap"><div class="about-score-bar" style="width:62%;background:#4a88cc;"></div></div>
-          <div class="about-score-weight" id="about-w-role">25 pts</div>
-          <div class="about-score-note">Any shared role type between your preferences and theirs.</div>
-        </div>
-        <div class="about-score-row">
-          <div class="about-score-label">Directorate</div>
-          <div class="about-score-bar-wrap"><div class="about-score-bar" style="width:62%;background:#4a88cc;"></div></div>
-          <div class="about-score-weight" id="about-w-dir">25 pts</div>
-          <div class="about-score-note">Shared directorate interests. Bonus points if multiple areas match.</div>
-        </div>
-        <div class="about-score-row">
-          <div class="about-score-label">Day pattern</div>
-          <div class="about-score-bar-wrap"><div class="about-score-bar" style="width:37%;background:#854F0B;"></div></div>
-          <div class="about-score-weight" id="about-w-days">15 pts</div>
-          <div class="about-score-note">Complementary days (minimal overlap, good week coverage) score highest.</div>
-        </div>
-        <div class="about-score-row">
-          <div class="about-score-label">Working style</div>
-          <div class="about-score-bar-wrap"><div class="about-score-bar" style="width:25%;background:#854F0B;"></div></div>
-          <div class="about-score-weight" id="about-w-style">10 pts</div>
-          <div class="about-score-note">Clean handover vs collaborative vs flexible. Flexible always scores points.</div>
-        </div>
+        <p class="privacy-text">PairUp first applies gates &mdash; a profile only shows up if:</p>
+        <ul class="about-gate-list">
+          <li>Your profile passes <strong>their</strong> &ldquo;Who can find me&rdquo; rules</li>
+          <li>Their profile passes <strong>your</strong> &ldquo;How I want to find matches&rdquo; settings (Grade and Directorate are &ldquo;Definite&rdquo; by default)</li>
+        </ul>
+        <p class="privacy-text" style="margin-top:10px;">Profiles that pass are then ranked 0&ndash;100 %:</p>
+        <ul class="about-rank-list">
+          <li><strong>Day pattern</strong> (up to 40 pts) &mdash; &ldquo;full + non&rdquo; complements score highest, &ldquo;full + full&rdquo; scores zero</li>
+          <li><strong>Extra directorate overlap</strong> (up to 20 pts)</li>
+          <li><strong>Recency</strong> (up to 20 pts) &mdash; active recently scores higher</li>
+          <li><strong>Same location</strong> (10 pts)</li>
+          <li><strong>Preferred bonuses</strong> (up to 30 pts) &mdash; from your search preferences</li>
+          <li><strong>Negotiable pattern</strong> (up to 3 pts)</li>
+        </ul>
+        <p class="privacy-text" style="margin-top:10px;">65 %+ is a strong fit, 40&ndash;64 % a partial fit, under 40 % a weak fit. Click any match percentage to see the exact breakdown.</p>
       </div>
 
       <div class="privacy-section" style="margin-top:14px;">
-        <div class="privacy-section-label" style="color:#185FA5;">What happens when you connect</div>
-        <p class="privacy-text">Clicking &ldquo;Request&rdquo; sends a signal to the other person. If they also express interest, you both see a notification. From there, you reach out directly &mdash; PairUp does not send messages on your behalf. The connection is purely a signal that both of you are open to a conversation.</p>
+        <div class="privacy-section-label" style="color:#185FA5;">What happens when you email a match</div>
+        <p class="privacy-text">The &ldquo;Email&rdquo; button opens your email client with the subject and a short message pre-filled, including a summary of your own profile so the other person has the context straight away. You can edit the message before sending. PairUp does not see or store the email.</p>
       </div>
 
       <div class="privacy-section">
         <div class="privacy-section-label" style="color:#185FA5;">Tips for getting good matches</div>
-        <p class="privacy-text">Select a wide range of roles and directorates you&rsquo;d genuinely consider &mdash; the matching works best when preferences aren&rsquo;t too narrow. Be realistic about your working days. Location matters less than grade and role fit, but it&rsquo;s worth knowing before you reach out.</p>
+        <p class="privacy-text">Pick a realistic mix of directorates you&rsquo;d genuinely consider. Be honest about the working days you want. If your default results feel too narrow, relax Grade or Directorates from &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in search settings.</p>
       </div>
 
       <div class="privacy-footer">
@@ -459,23 +788,16 @@
         </div>
       </div>
 
-      <div class="admin-note">Changes take effect immediately and persist across sessions. Staff scores are recalculated on next page load or refresh.</div>
-
-      <div class="admin-weights" id="adminWeights"></div>
+      <div class="admin-note">Ranking uses: day complementarity, recency, directorate overlap, and location. These are fixed. The only admin control below is how 1-grade-apart profiles are treated when a user sets Grade to &ldquo;Preferred&rdquo; (not Definite) in their search preferences.</div>
 
       <div class="admin-grade-section">
-        <div class="admin-weight-label">Grade mismatch penalty (1 grade apart)</div>
+        <div class="admin-weight-label">Grade mismatch treatment (1 grade apart, relaxed search only)</div>
         <div class="admin-grade-controls">
           <label class="admin-radio"><input type="radio" name="gradePenalty" value="hard" id="gp-hard"> <span>Hard exclude</span> <span class="admin-radio-note">Don&rsquo;t show at all</span></label>
-          <label class="admin-radio"><input type="radio" name="gradePenalty" value="heavy" id="gp-heavy"> <span>Heavy penalty</span> <span class="admin-radio-note">Score 10 pts (default)</span></label>
-          <label class="admin-radio"><input type="radio" name="gradePenalty" value="light" id="gp-light"> <span>Light penalty</span> <span class="admin-radio-note">Score 20 pts</span></label>
-          <label class="admin-radio"><input type="radio" name="gradePenalty" value="none" id="gp-none"> <span>No penalty</span> <span class="admin-radio-note">Full 40 pts</span></label>
+          <label class="admin-radio"><input type="radio" name="gradePenalty" value="heavy" id="gp-heavy"> <span>Heavy penalty</span> <span class="admin-radio-note">Score heavily reduced (default)</span></label>
+          <label class="admin-radio"><input type="radio" name="gradePenalty" value="light" id="gp-light"> <span>Light penalty</span> <span class="admin-radio-note">Score lightly reduced</span></label>
+          <label class="admin-radio"><input type="radio" name="gradePenalty" value="none" id="gp-none"> <span>No penalty</span> <span class="admin-radio-note">Treated same as matching grade</span></label>
         </div>
-      </div>
-
-      <div class="admin-total-row">
-        <span class="admin-total-label">Maximum possible score:</span>
-        <span class="admin-total-val" id="adminTotalScore">115 pts</span>
       </div>
 
       <div class="admin-actions">
@@ -503,7 +825,7 @@
   </div>
 
   <!-- Version -->
-  <div class="app-version">v1.11</div>
+  <div class="app-version">v1.13</div>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

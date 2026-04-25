@@ -1,149 +1,9 @@
-const ROLE_GROUPS = [
-  {
-    id: 'leadership', emoji: '👥', label: 'Leadership & Management',
-    minGrade: 'HEO',
-    roles: [
-      { label: 'Team Leader / Head of Section', minGrade: 'HEO' },
-      { label: 'Programme Manager / Programme Lead', minGrade: 'HEO' },
-      { label: 'Project Manager / Delivery Manager', minGrade: 'HEO' },
-      { label: 'Change Manager', minGrade: 'HEO' },
-      { label: 'Senior Responsible Owner (SRO)', minGrade: 'G7' },
-      { label: 'Deputy Head of Mission', minGrade: 'G6' },
-    ]
-  },
-  {
-    id: 'policy', emoji: '🌍', label: 'Policy & Diplomatic',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Desk Officer', minGrade: 'EO' },
-      { label: 'Policy Adviser', minGrade: 'HEO' },
-      { label: 'Senior Policy Adviser', minGrade: 'SEO' },
-      { label: 'Multilateral / Bilateral Policy Lead', minGrade: 'SEO' },
-      { label: 'Strategic Adviser', minGrade: 'G7' },
-      { label: 'Political Officer (overseas posts)', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'consular', emoji: '🛟', label: 'Consular & Crisis Response',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Consular Officer', minGrade: 'EO' },
-      { label: 'Consular Manager', minGrade: 'HEO' },
-      { label: 'Crisis Response Officer', minGrade: 'HEO' },
-      { label: 'Crisis Centre Operations Lead', minGrade: 'SEO' },
-      { label: 'Safeguarding & Welfare Adviser', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'finance', emoji: '💷', label: 'Finance & Commercial',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Finance Officer', minGrade: 'EO' },
-      { label: 'Finance Business Partner', minGrade: 'HEO' },
-      { label: 'Budget Holder', minGrade: 'HEO' },
-      { label: 'Commercial / Procurement Officer', minGrade: 'EO' },
-      { label: 'Contract Manager', minGrade: 'HEO' },
-      { label: 'Audit & Assurance Officer', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'hr', emoji: '🧑‍💼', label: 'Human Resources & People',
-    minGrade: 'EO',
-    roles: [
-      { label: 'HR Adviser', minGrade: 'EO' },
-      { label: 'HR Business Partner', minGrade: 'HEO' },
-      { label: 'Learning & Development Specialist', minGrade: 'HEO' },
-      { label: 'Talent & Capability Lead', minGrade: 'SEO' },
-      { label: 'Diversity & Inclusion Lead', minGrade: 'HEO' },
-      { label: 'Workforce Planning Analyst', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'corporate', emoji: '🧩', label: 'Corporate Services',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Corporate Services Manager', minGrade: 'HEO' },
-      { label: 'Estates & Facilities Manager', minGrade: 'HEO' },
-      { label: 'Security Manager', minGrade: 'HEO' },
-      { label: 'Protocol Officer', minGrade: 'EO' },
-      { label: 'Transport & Logistics Coordinator', minGrade: 'EO' },
-    ]
-  },
-  {
-    id: 'digital', emoji: '🖥️', label: 'Digital, Data & Technology',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Digital Product Manager', minGrade: 'HEO' },
-      { label: 'Technical Architect', minGrade: 'G7' },
-      { label: 'Software Engineer', minGrade: 'EO' },
-      { label: 'Data Analyst / Data Scientist', minGrade: 'EO' },
-      { label: 'Cyber Security Officer', minGrade: 'HEO' },
-      { label: 'IT Service Manager', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'comms', emoji: '📢', label: 'Communications & Engagement',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Communications Officer', minGrade: 'EO' },
-      { label: 'Press & Media Adviser', minGrade: 'HEO' },
-      { label: 'Strategic Communications Lead', minGrade: 'SEO' },
-      { label: 'Internal Communications Manager', minGrade: 'HEO' },
-      { label: 'Digital Communications Specialist', minGrade: 'EO' },
-    ]
-  },
-  {
-    id: 'legal', emoji: '📑', label: 'Legal, Governance & Compliance',
-    minGrade: 'HEO',
-    roles: [
-      { label: 'Legal Adviser', minGrade: 'HEO' },
-      { label: 'Governance Officer', minGrade: 'HEO' },
-      { label: 'Risk & Compliance Manager', minGrade: 'SEO' },
-      { label: 'Freedom of Information (FOI) Officer', minGrade: 'EO' },
-      { label: 'Data Protection Officer', minGrade: 'SEO' },
-    ]
-  },
-  {
-    id: 'programme', emoji: '📦', label: 'Programme Delivery & Development',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Programme Officer', minGrade: 'EO' },
-      { label: 'Monitoring, Evaluation & Learning (MEL) Specialist', minGrade: 'HEO' },
-      { label: 'Results Adviser', minGrade: 'HEO' },
-      { label: 'Thematic Adviser (climate, governance, health, economics)', minGrade: 'SEO' },
-      { label: 'Grant Manager', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'strategy', emoji: '🏢', label: 'Corporate Strategy & Performance',
-    minGrade: 'HEO',
-    roles: [
-      { label: 'Strategy Adviser', minGrade: 'SEO' },
-      { label: 'Organisational Performance Analyst', minGrade: 'HEO' },
-      { label: 'Portfolio Manager', minGrade: 'SEO' },
-      { label: 'Business Planning Lead', minGrade: 'HEO' },
-    ]
-  },
-  {
-    id: 'overseas', emoji: '🌐', label: 'Overseas Network Support',
-    minGrade: 'EO',
-    roles: [
-      { label: 'Political / Economic / Trade Officer', minGrade: 'EO' },
-      { label: 'Development Adviser', minGrade: 'HEO' },
-      { label: 'Consular Local Staff Lead', minGrade: 'EO' },
-      { label: 'Deputy High Commissioner / Deputy Ambassador', minGrade: 'G6' },
-      { label: 'Corporate Services Provider', minGrade: 'EO' },
-    ]
-  },
-];
+// ─── Grades ─────────────────────────────────────────────────────────────────
 
 const GRADES = ['AA/AO', 'EO', 'HEO', 'SEO', 'G7', 'G6', 'SCS1', 'SCS2'];
 const GRADE_IDX = Object.fromEntries(GRADES.map((g, i) => [g, i]));
 
-function gradeAllowed(roleMinGrade, userGrade) {
-  if (!userGrade) return true;
-  return GRADE_IDX[userGrade] >= GRADE_IDX[roleMinGrade];
-}
+// ─── Overseas offices ───────────────────────────────────────────────────────
 
 const OVERSEAS_OFFICES = [
   'Abuja', 'Accra', 'Addis Ababa', 'Algiers', 'Amman', 'Ankara', 'Astana',
@@ -162,203 +22,197 @@ const OVERSEAS_OFFICES = [
   'Vienna', 'Warsaw', 'Washington DC', 'Wellington', 'Windhoek', 'Zagreb',
 ];
 
-const DUMMY_PROFILES = [
-  {
-    id: 'p001', name: 'A. Rahman', grade: 'HEO',
-    roles: ['Policy Adviser', 'Desk Officer'],
-    directorates: ['Economic & Trade', 'Climate & Environment'],
-    days: ['Mon', 'Tue', 'Thu'],
-    style: 'clean',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p002', name: 'J. Pearce', grade: 'SEO',
-    roles: ['Senior Policy Adviser', 'Multilateral / Bilateral Policy Lead'],
-    directorates: ['Climate & Environment', 'Security & Defence'],
-    days: ['Mon', 'Tue', 'Wed'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p003', name: 'M. Thornton', grade: 'HEO',
-    roles: ['HR Business Partner', 'Diversity & Inclusion Lead'],
-    directorates: ['HR & People'],
-    days: ['Tue', 'Thu', 'Fri'],
-    style: 'flexible',
-    location: 'East Kilbride',
-    overseas: ''
-  },
-  {
-    id: 'p004', name: 'S. Okafor', grade: 'G7',
-    roles: ['Strategic Adviser', 'Senior Policy Adviser'],
-    directorates: ['Economic & Trade', 'Programme Delivery'],
-    days: ['Mon', 'Wed', 'Thu'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p005', name: 'L. Chen', grade: 'HEO',
-    roles: ['Data Analyst / Data Scientist', 'Digital Product Manager'],
-    directorates: ['Digital & Data'],
-    days: ['Mon', 'Tue', 'Thu'],
-    style: 'flexible',
-    location: 'Remote',
-    overseas: ''
-  },
-  {
-    id: 'p006', name: 'P. Williams', grade: 'SEO',
-    roles: ['Programme Officer', 'Grant Manager'],
-    directorates: ['Programme Delivery', 'Climate & Environment'],
-    days: ['Wed', 'Thu', 'Fri'],
-    style: 'clean',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p007', name: 'F. Mensah', grade: 'HEO',
-    roles: ['Finance Business Partner', 'Budget Holder'],
-    directorates: ['Finance', 'Corporate Services'],
-    days: ['Mon', 'Tue', 'Wed'],
-    style: 'clean',
-    location: 'East Kilbride',
-    overseas: ''
-  },
-  {
-    id: 'p008', name: 'C. Adeyemi', grade: 'G7',
-    roles: ['Strategy Adviser', 'Portfolio Manager'],
-    directorates: ['Economic & Trade', 'HR & People'],
-    days: ['Tue', 'Wed', 'Thu'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p009', name: 'R. Kapoor', grade: 'HEO',
-    roles: ['Policy Adviser', 'Political Officer (overseas posts)'],
-    directorates: ['Security & Defence', 'Overseas Network'],
-    days: ['Mon', 'Thu', 'Fri'],
-    style: 'flexible',
-    location: 'Overseas',
-    overseas: 'Delhi'
-  },
-  {
-    id: 'p010', name: 'T. Nakamura', grade: 'SEO',
-    roles: ['Communications Officer', 'Strategic Communications Lead'],
-    directorates: ['Communications'],
-    days: ['Mon', 'Tue', 'Thu'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p011', name: 'B. Owusu', grade: 'G7',
-    roles: ['Legal Adviser', 'Risk & Compliance Manager'],
-    directorates: ['Legal & Governance'],
-    days: ['Wed', 'Thu', 'Fri'],
-    style: 'clean',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p012', name: 'E. Morrison', grade: 'HEO',
-    roles: ['Consular Officer', 'Safeguarding & Welfare Adviser'],
-    directorates: ['Consular'],
-    days: ['Tue', 'Wed', 'Fri'],
-    style: 'flexible',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p013', name: 'D. Johansson', grade: 'EO',
-    roles: ['Finance Officer', 'Protocol Officer'],
-    directorates: ['Finance', 'Corporate Services'],
-    days: ['Mon', 'Tue', 'Wed'],
-    style: 'clean',
-    location: 'East Kilbride',
-    overseas: ''
-  },
-  {
-    id: 'p014', name: 'N. Dubois', grade: 'SEO',
-    roles: ['Monitoring, Evaluation & Learning (MEL) Specialist', 'Thematic Adviser (climate, governance, health, economics)'],
-    directorates: ['Programme Delivery', 'Climate & Environment'],
-    days: ['Mon', 'Tue', 'Thu'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p015', name: 'K. Osei', grade: 'HEO',
-    roles: ['HR Business Partner', 'Learning & Development Specialist'],
-    directorates: ['HR & People'],
-    days: ['Wed', 'Thu', 'Fri'],
-    style: 'flexible',
-    location: 'Remote',
-    overseas: ''
-  },
-  {
-    id: 'p016', name: 'A. Fitzgerald', grade: 'G6',
-    roles: ['Deputy Head of Mission', 'Strategic Adviser'],
-    directorates: ['Overseas Network', 'Security & Defence'],
-    days: ['Mon', 'Tue', 'Wed'],
-    style: 'clean',
-    location: 'Overseas',
-    overseas: 'Nairobi'
-  },
-  {
-    id: 'p017', name: 'Y. Ibrahim', grade: 'HEO',
-    roles: ['Digital Product Manager', 'IT Service Manager'],
-    directorates: ['Digital & Data'],
-    days: ['Tue', 'Thu', 'Fri'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p018', name: 'S. Kowalski', grade: 'SEO',
-    roles: ['Talent & Capability Lead', 'Workforce Planning Analyst'],
-    directorates: ['HR & People', 'Corporate Services'],
-    days: ['Mon', 'Wed', 'Fri'],
-    style: 'flexible',
-    location: 'East Kilbride',
-    overseas: ''
-  },
-  {
-    id: 'p019', name: 'O. Nwosu', grade: 'G7',
-    roles: ['Technical Architect', 'Cyber Security Officer'],
-    directorates: ['Digital & Data'],
-    days: ['Mon', 'Tue', 'Thu'],
-    style: 'clean',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p020', name: 'M. Patel', grade: 'HEO',
-    roles: ['Policy Adviser', 'Programme Officer'],
-    directorates: ['Economic & Trade', 'Programme Delivery', 'Open to any'],
-    days: ['Mon', 'Tue', 'Wed'],
-    style: 'collaborative',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p021', name: 'H. Davies', grade: 'SEO',
-    roles: ['Senior Policy Adviser', 'Multilateral / Bilateral Policy Lead'],
-    directorates: ['Security & Defence', 'Economic & Trade'],
-    days: ['Wed', 'Thu', 'Fri'],
-    style: 'flexible',
-    location: 'London - KCS',
-    overseas: ''
-  },
-  {
-    id: 'p022', name: 'G. Andersen', grade: 'HEO',
-    roles: ['Press & Media Adviser', 'Communications Officer'],
-    directorates: ['Communications'],
-    days: ['Mon', 'Tue', 'Fri'],
-    style: 'collaborative',
-    location: 'Remote',
-    overseas: ''
-  },
+// ─── Dummy profiles: generated, 15 per grade (120 total) ────────────────────
+
+const DAY = 86400000;
+const NOW = Date.now();
+
+const INITIALS = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
+  'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'Y', 'Z',
 ];
+const SURNAMES = [
+  'Ahmed', 'Andersen', 'Adeyemi', 'Bennett', 'Brooks', 'Chen', 'Clarke', 'Davies',
+  'Dubois', 'Evans', 'Fitzgerald', 'Foster', 'Gupta', 'Hassan', 'Ibrahim', 'Jones',
+  'Johansson', 'Kapoor', 'Khan', 'Kowalski', 'Lee', 'Liu', 'Mensah', 'Morrison',
+  'Nakamura', 'Nwosu', 'Okafor', 'Osei', 'Owusu', 'Patel', 'Pearce', 'Rahman',
+  'Reyes', 'Ross', 'Singh', 'Taylor', 'Thornton', 'Walsh', 'Williams', 'Yusuf',
+];
+
+// Weighted toward popular directorates so any common user pick has plenty of
+// overlapping candidates per grade.
+const DIR_SETS = [
+  ['Economic & Trade'],
+  ['Economic & Trade', 'Climate & Environment'],
+  ['Economic & Trade', 'Programme Delivery'],
+  ['Economic & Trade', 'Security & Defence'],
+  ['Economic & Trade', 'Match to any'],
+  ['Climate & Environment'],
+  ['Climate & Environment', 'Programme Delivery'],
+  ['Climate & Environment', 'Overseas Network'],
+  ['Climate & Environment', 'Match to any'],
+  ['Programme Delivery'],
+  ['Programme Delivery', 'HR & People'],
+  ['Programme Delivery', 'Finance'],
+  ['Programme Delivery', 'Match to any'],
+  ['Security & Defence'],
+  ['Security & Defence', 'Overseas Network'],
+  ['Security & Defence', 'Match to any'],
+  ['HR & People'],
+  ['HR & People', 'Corporate Services'],
+  ['HR & People', 'Communications'],
+  ['Finance'],
+  ['Finance', 'Corporate Services'],
+  ['Digital & Data'],
+  ['Digital & Data', 'Programme Delivery'],
+  ['Legal & Governance'],
+  ['Legal & Governance', 'HR & People'],
+  ['Communications'],
+  ['Consular'],
+  ['Overseas Network'],
+  ['Corporate Services'],
+  ['Match to any'],
+  ['Match to any', 'Economic & Trade'],
+  ['Match to any', 'Programme Delivery'],
+];
+
+const DAYS_PATTERNS = [
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'full', Wed: 'part', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'full' },
+  { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'full', Fri: 'flexible' },
+  { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'full', Fri: 'non' },
+  { Mon: 'full', Tue: 'non', Wed: 'non', Thu: 'full', Fri: 'flexible' },
+  { Mon: 'full', Tue: 'part', Wed: 'non', Thu: 'full', Fri: 'non' },
+  { Mon: 'non', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'full', Thu: 'non', Fri: 'non' },
+  { Mon: 'non', Tue: 'non', Wed: 'full', Thu: 'full', Fri: 'part' },
+  { Mon: 'full', Tue: 'non', Wed: 'full', Thu: 'non', Fri: 'full' },
+  { Mon: 'full', Tue: 'full', Wed: 'non', Thu: 'non', Fri: 'full' },
+  { Mon: 'non', Tue: 'full', Wed: 'flexible', Thu: 'full', Fri: 'full' },
+  { Mon: 'flexible', Tue: 'full', Wed: 'non', Thu: 'non', Fri: 'part' },
+  { Mon: 'full', Tue: 'non', Wed: 'part', Thu: 'full', Fri: 'non' },
+];
+
+// Weighted toward London — matches real FCDO distribution
+const LOCATIONS = [
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'London - KCS', overseas: '' },
+  { loc: 'East Kilbride', overseas: '' },
+  { loc: 'East Kilbride', overseas: '' },
+  { loc: 'Remote', overseas: '' },
+  { loc: 'Overseas', overseas: 'Delhi' },
+  { loc: 'Overseas', overseas: 'Nairobi' },
+  { loc: 'Overseas', overseas: 'Brussels' },
+  { loc: 'Overseas', overseas: 'Washington DC' },
+  { loc: 'Overseas', overseas: 'Singapore' },
+  { loc: 'Overseas', overseas: 'Paris' },
+];
+
+const FTES = ['0.5 FTE', '0.6 FTE', '0.7 FTE', '0.8 FTE', '3 days', '22 hours', '30 hours', '4 days'];
+const NEGOTIABLES = ['yes', 'possibly', 'no', 'yes', 'possibly', ''];
+
+const AVAILABILITIES = [
+  'Looking for roles in stage 2 of the restructure',
+  'Open to opportunities, flexible on timing',
+  'End of tour June, seeking partner for next posting',
+  'Have been offered a role, seeking Mon-Wed partner',
+  'Returning from maternity leave, starting Sep',
+  '',
+  'Comms role, any team, starting Oct',
+  'Open to HR or corporate services',
+  'Looking for strategy or talent roles',
+  'Currently overseas, UK return Aug 2026',
+  '',
+  'Actively seeking, stage 2 placements',
+  'Finance or corporate services roles, stage 2',
+  'Happy to consider any team where the work aligns',
+  '',
+];
+
+const SKILLS_POOL = [
+  '',
+  '8 years policy, Middle East and trade specialism',
+  'HR business partnering, D&I lead, complex casework',
+  'Digital product management, agile delivery',
+  'Finance business partner, 5 years budget management',
+  'Programme delivery, monitoring and evaluation specialist',
+  'Legal adviser, compliance, public international law',
+  'Press office lead, strategic communications',
+  'Consular, safeguarding, crisis response',
+  '',
+  'Data analysis, Python and SQL, 4 years analytics',
+  'Senior policy, sanctions and trade experience',
+  'Talent management, workforce planning',
+  'Policy adviser, programme officer background',
+  '',
+];
+
+const PATTERN_NOTES = [
+  '', '', '', '',
+  'Happy to cover school hours if needed',
+  'Prefer not to work school holidays',
+  'Can work 6 hours Wednesday from home',
+  'Carer responsibilities some days',
+];
+
+const OTHER_INFO = [
+  '', '', '', '', '',
+  'Open to 12-month initial trial',
+  'Applying for Geneva multilateral roles',
+  'Happy to consider job share across grades',
+];
+
+const DUMMY_PROFILES = [];
+let _pIdx = 1;
+
+GRADES.forEach((grade, gi) => {
+  for (let j = 0; j < 15; j++) {
+    const idx = gi * 15 + j;
+    const initial = INITIALS[(idx * 7) % INITIALS.length];
+    const surname = SURNAMES[idx % SURNAMES.length];
+    const loc = LOCATIONS[(idx * 3) % LOCATIONS.length];
+    // "Last active" distribution: ~55% fresh (<2 months), ~30% amber (2–6m),
+    // ~15% red (>6m). No grey in the colour scale any more.
+    const bucket = idx % 20;
+    let ageDays;
+    if (bucket < 11) ageDays = (idx * 3) % 60;               // ~55% fresh
+    else if (bucket < 17) ageDays = 60 + ((idx * 5) % 120);  // ~30% amber
+    else ageDays = 180 + ((idx * 7) % 120);                  // ~15% red
+
+    // Vary "Who can find me" so relaxing search prefs actually changes the list:
+    //  - ~40% keep both grade + directorates as Must (the current default)
+    //  - ~30% open grade (visible across grades if directorate overlaps)
+    //  - ~20% open directorates (visible to same-grade across all directorates)
+    //  - ~10% open both (visible to anyone)
+    const vBucket = idx % 10;
+    let visibility;
+    if (vBucket < 4)      visibility = { grade: 'must', directorates: 'must', location: 'open', days: 'open' };
+    else if (vBucket < 7) visibility = { grade: 'open', directorates: 'must', location: 'open', days: 'open' };
+    else if (vBucket < 9) visibility = { grade: 'must', directorates: 'open', location: 'open', days: 'open' };
+    else                  visibility = { grade: 'open', directorates: 'open', location: 'open', days: 'open' };
+
+    DUMMY_PROFILES.push({
+      id: 'p' + String(_pIdx++).padStart(3, '0'),
+      name: `${initial}. ${surname}`,
+      grade,
+      directorates: DIR_SETS[(idx * 5) % DIR_SETS.length],
+      days: DAYS_PATTERNS[(idx * 11) % DAYS_PATTERNS.length],
+      fte: FTES[idx % FTES.length],
+      daysNegotiable: NEGOTIABLES[idx % NEGOTIABLES.length],
+      availability: AVAILABILITIES[idx % AVAILABILITIES.length],
+      skills: SKILLS_POOL[idx % SKILLS_POOL.length],
+      workingPatternNotes: PATTERN_NOTES[idx % PATTERN_NOTES.length],
+      otherInfo: OTHER_INFO[idx % OTHER_INFO.length],
+      location: loc.loc,
+      overseas: loc.overseas,
+      lastActive: NOW - ageDays * DAY,
+      visibility,
+    });
+  }
+});
