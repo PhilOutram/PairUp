@@ -195,6 +195,65 @@ body.theme-frontier {
   --guidance-intro-text: #5d6680;
 }
 
+/* ─── Theme: Frontier Bold ────────────────────────────────────────── */
+/* Saturated FTH brand colours used directly. Deep teal #1f8079 fills
+   the page background; navy #2c3759 is the heading colour; mint
+   #5dd5cb is the highlight; coral is intentionally absent (no red on
+   the profile page). White panels float on the teal field. */
+body.theme-frontier-bold {
+  --page-bg: #1f8079;
+  --body-text: #f1f9f8;
+
+  --panel-bg: #ffffff;
+  --panel-border: rgba(44, 55, 89, 0.20);
+  --panel-shadow: 0 2px 10px rgba(13, 79, 77, 0.22);
+  --panel-radius: 10px;
+  --panel-divider: rgba(44, 55, 89, 0.18);
+  --soft-bg: #f1f9f8;
+
+  --title-color: #2c3759;
+  --sub-text-color: #5d6680;
+  --version-text: #b6e4df;
+
+  --test-fill-bg: #ffffff;
+  --test-fill-border: #5dd5cb;
+  --test-fill-text: #1f8079;
+  --test-fill-hover-bg: #d6efed;
+  --test-fill-hover-text: #155c57;
+
+  --help-btn-border: #5dd5cb;
+  --help-btn-text: #1f8079;
+  --help-btn-hover-bg: #d6efed;
+  --help-btn-hover-text: #155c57;
+
+  /* Consent: mint/teal tint, no coral. */
+  --consent-bg: #d6efed;
+  --consent-border: #5dd5cb;
+  --consent-text: #0d4f4d;
+  --consent-text-strong: #062a29;
+  --consent-accent: #1f8079;
+
+  /* Matches intro: navy tint, picking up the second FTH band colour. */
+  --intro-bg: #e7eaf3;
+  --intro-border: #b8c0d6;
+  --intro-accent: #2c3759;
+  --intro-text: #1d2440;
+  --intro-text-strong: #0a1126;
+
+  --guidance-link-bg: #d6efed;
+  --guidance-link-accent: #1f8079;
+  --guidance-footer-border: #b6e4df;
+  --guidance-intro-h1: #2c3759;
+  --guidance-intro-text: #5d6680;
+}
+
+/* Frontier Bold: lift dark page-intro text to pale mint so it stays
+   readable on the deep-teal body background. */
+body.theme-frontier-bold .page-intro h1 { color: #ffffff; }
+body.theme-frontier-bold .page-intro p { color: #d6efed; }
+body.theme-frontier-bold .completeness-label { color: #d6efed; }
+body.theme-frontier-bold .completeness-bar { background: rgba(255,255,255,0.22); }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;

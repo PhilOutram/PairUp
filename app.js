@@ -1325,10 +1325,11 @@ function closeDeleteHelpIfBg(e) { if (e.target === document.getElementById('dele
 
 const THEME_KEY = 'pairup_theme_v1';
 const THEMES = [
-  { id: 'modern',   label: 'Modern',   className: '' },
-  { id: 'classic',  label: 'Classic',  className: 'theme-classic' },
-  { id: 'simple',   label: 'Simple',   className: 'theme-simple' },
-  { id: 'frontier', label: 'Frontier', className: 'theme-frontier' },
+  { id: 'modern',         label: 'Modern',        className: '' },
+  { id: 'classic',        label: 'Classic',       className: 'theme-classic' },
+  { id: 'simple',         label: 'Simple',        className: 'theme-simple' },
+  { id: 'frontier',       label: 'Frontier',      className: 'theme-frontier' },
+  { id: 'frontier-bold',  label: 'Frontier Bold', className: 'theme-frontier-bold' },
 ];
 
 function applyTheme(id) {
