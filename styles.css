@@ -636,10 +636,11 @@ body.theme-frontier-bold .section-label { color: #d6efed; }
   display: flex; overflow: hidden; margin-bottom: 18px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.08);
 }
-/* Frontier Bold has a dark teal page background; the white card body
-   already has plenty of contrast on its own, so drop the border AND
-   the box-shadow (the shadow's blur created a faint halo on dark bg). */
-body.theme-frontier-bold .ccard { border-color: transparent; box-shadow: none; }
+/* Frontier Bold has a dark teal page background. A transparent border
+   was rendering as a pale halo against the dark bg, so paint the
+   border in the page bg colour to make it disappear. Drop the
+   box-shadow too - white-on-teal contrast is already plenty. */
+body.theme-frontier-bold .ccard { border-color: #1f8079; box-shadow: none; }
 .ccard-accent { width: 8px; flex-shrink: 0; }
 .ccard-inner { flex: 1; padding: 14px 16px; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ccard-left { flex: 1; min-width: 0; }
