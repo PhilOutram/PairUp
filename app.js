@@ -1321,6 +1321,34 @@ document.getElementById('deleteHelpBtn').addEventListener('click', () => {
 function closeDeleteHelp() { document.getElementById('deleteHelpOverlay').classList.remove('open'); }
 function closeDeleteHelpIfBg(e) { if (e.target === document.getElementById('deleteHelpOverlay')) closeDeleteHelp(); }
 
+// ─── Theme toggle (Modern / Classic / Frontier) ─────────────────────────────
+
+const THEME_KEY = 'pairup_theme_v1';
+const THEMES = [
+  { id: 'modern',   label: 'Modern',   className: '' },
+  { id: 'classic',  label: 'Classic',  className: 'theme-classic' },
+  { id: 'frontier', label: 'Frontier', className: 'theme-frontier' },
+];
+
+function applyTheme(id) {
+  const theme = THEMES.find(t => t.id === id) || THEMES[0];
+  THEMES.forEach(t => { if (t.className) document.body.classList.remove(t.className); });
+  if (theme.className) document.body.classList.add(theme.className);
+  const label = document.getElementById('themeBtnLabel');
+  if (label) label.textContent = theme.label;
+  localStorage.setItem(THEME_KEY, theme.id);
+}
+
+function cycleTheme() {
+  const current = localStorage.getItem(THEME_KEY) || 'modern';
+  const idx = THEMES.findIndex(t => t.id === current);
+  const next = THEMES[(idx + 1) % THEMES.length];
+  applyTheme(next.id);
+}
+
+applyTheme(localStorage.getItem(THEME_KEY) || 'modern');
+document.getElementById('themeBtn').addEventListener('click', cycleTheme);
+
 // ─── Version / what's new modal ─────────────────────────────────────────────
 
 document.getElementById('versionBtn').addEventListener('click', () => {
