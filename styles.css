@@ -47,6 +47,13 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
   --guidance-footer-border: #d8e3ee;
   --guidance-intro-h1: #042C53;
   --guidance-intro-text: #4a6680;
+
+  --progress-fill: #185FA5;
+  --progress-fill-complete: #27500A;
+
+  --btn-primary: #185FA5;
+  --btn-primary-hover: #124a82;
+  --btn-primary-text: #ffffff;
 }
 
 /* ─── Theme: Classic (the original beige + cream look) ────────────── */
@@ -245,7 +252,27 @@ body.theme-frontier-bold {
   --guidance-footer-border: #b6e4df;
   --guidance-intro-h1: #2c3759;
   --guidance-intro-text: #5d6680;
+
+  /* Bright FTH turquoise for every "selected" / highlighted option and
+     for the progress bar in both states. */
+  --progress-fill: #42d6d1;
+  --progress-fill-complete: #42d6d1;
+
+  /* Solid action buttons (Save, Email, Refresh, Admin save) use the
+     deep FTH navy. */
+  --btn-primary: #334267;
+  --btn-primary-hover: #1f2a4a;
+  --btn-primary-text: #ffffff;
+
+  /* Guidance left-edge highlights and box text both use FTH navy. */
+  --guidance-link-accent: #334267;
 }
+
+/* Frontier Bold: tint the guidance link cards' body text and link text
+   in the same FTH navy as the left-edge accent, so the cards read as a
+   coherent navy block instead of a generic grey list. */
+body.theme-frontier-bold .guidance-links li { color: #334267; }
+body.theme-frontier-bold .guidance-links a { color: #334267; }
 
 /* Frontier Bold: lift dark page-intro text to pale mint so it stays
    readable on the deep-teal body background. */
@@ -253,6 +280,24 @@ body.theme-frontier-bold .page-intro h1 { color: #ffffff; }
 body.theme-frontier-bold .page-intro p { color: #d6efed; }
 body.theme-frontier-bold .completeness-label { color: #d6efed; }
 body.theme-frontier-bold .completeness-bar { background: rgba(255,255,255,0.22); }
+
+/* Frontier Bold: every "highlighted option" (selected chip, day option,
+   visibility / search-pref toggle, filter chip) uses the bright FTH
+   turquoise. The grey "non" / "irrelevant" states are left alone so they
+   keep reading as deliberately muted. */
+body.theme-frontier-bold .chip.selected,
+body.theme-frontier-bold .chip-anyoption.selected,
+body.theme-frontier-bold .day-opt.selected,
+body.theme-frontier-bold .day-opt[data-val="part"].selected,
+body.theme-frontier-bold .day-opt[data-val="flexible"].selected,
+body.theme-frontier-bold .toggle-btn.selected,
+body.theme-frontier-bold .toggle-btn[data-val="open"].selected,
+body.theme-frontier-bold .toggle-btn[data-val="preferred"].selected,
+body.theme-frontier-bold .filter-chip.selected {
+  background: #42d6d1;
+  color: #062a29;
+  border-color: #1eb6b1;
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -342,10 +387,10 @@ body {
   all: unset;
   display: inline-flex; align-items: center; gap: 5px; box-sizing: border-box;
   padding: 6px 14px; font-size: 12px; font-weight: 700;
-  color: #fff; background: #185FA5; border-radius: 7px; cursor: pointer;
+  color: var(--btn-primary-text); background: var(--btn-primary); border-radius: 7px; cursor: pointer;
   letter-spacing: 0.3px;
 }
-.btn-refresh-search:hover { background: #124a82; }
+.btn-refresh-search:hover { background: var(--btn-primary-hover); }
 .btn-refresh-search.spinning svg { animation: spin 0.7s linear infinite; }
 .btn-refresh-search:disabled { opacity: 0.6; cursor: default; }
 
@@ -376,7 +421,8 @@ body {
 /* ─── Completeness ─────────────────────────────────────────────────── */
 .profile-completeness { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
 .completeness-bar { flex: 1; height: 4px; background: #e5e5e5; border-radius: 2px; overflow: hidden; }
-.completeness-fill { height: 100%; border-radius: 2px; background: #185FA5; transition: width 0.3s ease, background 0.3s; width: 0%; }
+.completeness-fill { height: 100%; border-radius: 2px; background: var(--progress-fill); transition: width 0.3s ease, background 0.3s; width: 0%; }
+.completeness-fill.complete { background: var(--progress-fill-complete); }
 .completeness-label { font-size: 12px; font-weight: 600; color: #888; white-space: nowrap; min-width: 110px; text-align: right; }
 
 /* ─── Form groups (Required / Optional) ───────────────────────────── */
@@ -527,8 +573,8 @@ body {
 
 /* ─── Form actions ─────────────────────────────────────────────────── */
 .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
-.btn-save { padding: 10px 22px; background: #4a88cc; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.btn-save:hover:not(:disabled) { background: #3a72b0; }
+.btn-save { padding: 10px 22px; background: var(--btn-primary); color: var(--btn-primary-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-save:hover:not(:disabled) { background: var(--btn-primary-hover); }
 .btn-save:disabled { background: #c7d5e5; color: #eef3f9; cursor: not-allowed; }
 .btn-danger-soft { padding: 10px 16px; background: transparent; color: #A32D2D; border: 1px solid #F09595; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn-danger-soft:hover { background: #FCEBEB; }
@@ -697,8 +743,8 @@ body {
 .empty-icon { font-size: 30px; margin-bottom: 10px; }
 .empty-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 6px; }
 .empty-sub { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 16px; max-width: 340px; margin-left: auto; margin-right: auto; }
-.btn-primary-sm { display: inline-block; padding: 9px 20px; background: #4a88cc; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
-.btn-primary-sm:hover { background: #3a72b0; }
+.btn-primary-sm { display: inline-block; padding: 9px 20px; background: var(--btn-primary); color: var(--btn-primary-text); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+.btn-primary-sm:hover { background: var(--btn-primary-hover); }
 
 /* ─── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 640px) {
@@ -1136,10 +1182,10 @@ body {
 
 .admin-actions { display: flex; gap: 10px; margin-bottom: 14px; }
 .admin-save-btn {
-  flex: 1; padding: 9px 16px; background: #4a88cc; color: #fff;
+  flex: 1; padding: 9px 16px; background: var(--btn-primary); color: var(--btn-primary-text);
   border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer;
 }
-.admin-save-btn:hover { background: #3a72b0; }
+.admin-save-btn:hover { background: var(--btn-primary-hover); }
 .admin-reset-btn {
   padding: 9px 16px; background: transparent; color: #888;
   border: 1px solid #ddd; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer;

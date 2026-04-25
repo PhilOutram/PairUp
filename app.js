@@ -534,7 +534,7 @@ function buildCard(matchObj, context) {
     </div>`;
   }
 
-  const btnBlue = `background:#185FA5;color:#fff;`;
+  const btnBlue = `background:var(--btn-primary);color:var(--btn-primary-text);`;
   const btnGhost = `background:transparent;color:#999;border:0.5px solid #ccc;`;
   const btnBase = `all:unset;display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;font-weight:500;padding:6px 0;border-radius:7px;cursor:pointer;`;
 
@@ -747,10 +747,11 @@ function updateCompleteness() {
   if (location) filled++;
 
   const pct = Math.round((filled / 5) * 100);
-  document.getElementById('complFill').style.width = pct + '%';
+  const fill = document.getElementById('complFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('complete', pct === 100);
   const labels = ['Profile incomplete', 'Getting started', 'Keep going…', 'Half way there', 'Almost there', 'Profile complete'];
   document.getElementById('complLabel').textContent = labels[filled] || 'Profile complete';
-  document.getElementById('complFill').style.background = pct === 100 ? '#27500A' : '#185FA5';
 
   updateSaveButtonState();
 }
