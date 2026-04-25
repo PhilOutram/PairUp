@@ -2,12 +2,309 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { overflow-y: scroll; scrollbar-gutter: stable; }
 
+/* ─── Theme variables ─────────────────────────────────────────────── */
+/* Default = "Modern" theme: blue + green, taken from the FCDOPairUp logo. */
+:root {
+  --page-bg: #dbe5ef;
+  --body-text: #1a1a1a;
+
+  --panel-bg: #ffffff;
+  --panel-border: rgba(24, 95, 165, 0.18);
+  --panel-shadow: 0 1px 0 rgba(24, 95, 165, 0.04);
+  --panel-radius: 12px;
+  --panel-divider: rgba(24, 95, 165, 0.16);
+  --soft-bg: #f4f8fc;
+
+  --title-color: #042C53;
+  --sub-text-color: #4a6680;
+  --version-text: #8ea3b9;
+
+  --test-fill-bg: #eef4fa;
+  --test-fill-border: #9cc7f0;
+  --test-fill-text: #185FA5;
+  --test-fill-hover-bg: #daeaf8;
+  --test-fill-hover-text: #042C53;
+
+  --help-btn-border: #9cc7f0;
+  --help-btn-text: #185FA5;
+  --help-btn-hover-bg: #daeaf8;
+  --help-btn-hover-text: #042C53;
+
+  --consent-bg: #f1f9f3;
+  --consent-border: #b8dcc4;
+  --consent-text: #1f4030;
+  --consent-text-strong: #0a2418;
+  --consent-accent: #0F6E56;
+
+  --intro-bg: #ecf6f0;
+  --intro-border: #b8dcc4;
+  --intro-accent: #0F6E56;
+  --intro-text: #1f4030;
+  --intro-text-strong: #0a2418;
+
+  --guidance-link-bg: #eef4fa;
+  --guidance-link-accent: #185FA5;
+  --guidance-footer-border: #d8e3ee;
+  --guidance-intro-h1: #042C53;
+  --guidance-intro-text: #4a6680;
+
+  --progress-fill: #185FA5;
+  --progress-fill-complete: #27500A;
+
+  --btn-primary: #185FA5;
+  --btn-primary-hover: #124a82;
+  --btn-primary-text: #ffffff;
+}
+
+/* ─── Theme: Classic (the original beige + cream look) ────────────── */
+body.theme-classic {
+  --page-bg: #cfc5ab;
+
+  --panel-bg: #f3eddb;
+  --panel-border: rgba(100, 80, 30, 0.2);
+  --panel-shadow: none;
+  --panel-radius: 12px;
+  --panel-divider: rgba(100, 80, 30, 0.18);
+  --soft-bg: #fafaf7;
+
+  --title-color: #3a2e10;
+  --sub-text-color: #6e5d30;
+  --version-text: #ccc;
+
+  --test-fill-bg: #f5efdb;
+  --test-fill-border: #b7a261;
+  --test-fill-text: #6e5d30;
+  --test-fill-hover-bg: #ede3c2;
+  --test-fill-hover-text: #3a2e10;
+
+  --help-btn-border: #b7a261;
+  --help-btn-text: #6e5d30;
+  --help-btn-hover-bg: #ede3c2;
+  --help-btn-hover-text: #3a2e10;
+
+  --consent-bg: #ffffff;
+  --consent-border: #b7a261;
+  --consent-text: #3a2e10;
+  --consent-text-strong: #111111;
+  --consent-accent: #185FA5;
+
+  --intro-bg: #fffcee;
+  --intro-border: #e6d9aa;
+  --intro-accent: #e6d9aa;          /* same as border so the left edge blends */
+  --intro-text: #3a2e10;
+  --intro-text-strong: #111111;
+
+  --guidance-link-bg: #f8f6ec;
+  --guidance-link-accent: #b7a261;
+  --guidance-footer-border: #e6d9aa;
+  --guidance-intro-h1: #3a2e10;
+  --guidance-intro-text: #6e5d30;
+}
+
+/* ─── Theme: Simple (clean greyscale + warm orange accent) ────────── */
+/* High-contrast white-led layout, sharp corners, a single warm accent. */
+body.theme-simple {
+  --page-bg: #f5f5f5;
+
+  --panel-bg: #ffffff;
+  --panel-border: #e5e5e5;
+  --panel-shadow: none;
+  --panel-radius: 4px;
+  --panel-divider: #eeeeee;
+  --soft-bg: #fafafa;
+
+  --title-color: #111111;
+  --sub-text-color: #555555;
+  --version-text: #999999;
+
+  --test-fill-bg: #ffffff;
+  --test-fill-border: #d14d29;
+  --test-fill-text: #d14d29;
+  --test-fill-hover-bg: #fbeae3;
+  --test-fill-hover-text: #a83a1e;
+
+  --help-btn-border: #d14d29;
+  --help-btn-text: #d14d29;
+  --help-btn-hover-bg: #fbeae3;
+  --help-btn-hover-text: #a83a1e;
+
+  --consent-bg: #fafafa;
+  --consent-border: #e5e5e5;
+  --consent-text: #222222;
+  --consent-text-strong: #000000;
+  --consent-accent: #d14d29;
+
+  --intro-bg: #fafafa;
+  --intro-border: #e5e5e5;
+  --intro-accent: #d14d29;
+  --intro-text: #333333;
+  --intro-text-strong: #111111;
+
+  --guidance-link-bg: #fafafa;
+  --guidance-link-accent: #d14d29;
+  --guidance-footer-border: #eeeeee;
+  --guidance-intro-h1: #111111;
+  --guidance-intro-text: #555555;
+}
+
+/* ─── Theme: Frontier (Frontier Tech Hub-inspired vibrant) ────────── */
+/* Lifted from the FTH brand assets (header screenshot + their static.css):
+     #1f8079 deep teal       (header band)
+     #2c3759 deep navy       (second band — also custom.css #343047)
+     #5dd5cb bright mint     ("Explore in-depth evidence" heading)
+     #f0523d warm coral      (one-off accent in their static.css)
+   Navy is used for headings, deep teal for primary chrome, mint for
+   highlights, coral for the consent/agree action. */
+body.theme-frontier {
+  --page-bg: #e6f3f1;
+
+  --panel-bg: #ffffff;
+  --panel-border: rgba(31, 128, 121, 0.22);
+  --panel-shadow: 0 1px 0 rgba(31, 128, 121, 0.06);
+  --panel-radius: 8px;
+  --panel-divider: rgba(31, 128, 121, 0.18);
+  --soft-bg: #f1f9f8;
+
+  --title-color: #2c3759;
+  --sub-text-color: #5d6680;
+  --version-text: #7a9a99;
+
+  --test-fill-bg: #d6efed;
+  --test-fill-border: #5dd5cb;
+  --test-fill-text: #1f8079;
+  --test-fill-hover-bg: #b6e4df;
+  --test-fill-hover-text: #155c57;
+
+  --help-btn-border: #5dd5cb;
+  --help-btn-text: #1f8079;
+  --help-btn-hover-bg: #b6e4df;
+  --help-btn-hover-text: #155c57;
+
+  /* Consent: warm coral tint so the "agree" action pops against the teal
+     page chrome. */
+  --consent-bg: #fdeae6;
+  --consent-border: #f5b3a5;
+  --consent-text: #5a1f12;
+  --consent-text-strong: #2e0e08;
+  --consent-accent: #f0523d;
+
+  /* Matches intro: bright-mint tint with a deep-teal left border. */
+  --intro-bg: #d6efed;
+  --intro-border: #9be0d8;
+  --intro-accent: #1f8079;
+  --intro-text: #1d3942;
+  --intro-text-strong: #0a2225;
+
+  --guidance-link-bg: #d6efed;
+  --guidance-link-accent: #1f8079;
+  --guidance-footer-border: #b6e4df;
+  --guidance-intro-h1: #2c3759;
+  --guidance-intro-text: #5d6680;
+}
+
+/* ─── Theme: Frontier Bold ────────────────────────────────────────── */
+/* Saturated FTH brand colours used directly. Deep teal #1f8079 fills
+   the page background; navy #2c3759 is the heading colour; mint
+   #5dd5cb is the highlight; coral is intentionally absent (no red on
+   the profile page). White panels float on the teal field. */
+body.theme-frontier-bold {
+  --page-bg: #1f8079;
+  --body-text: #f1f9f8;
+
+  --panel-bg: #ffffff;
+  --panel-border: rgba(44, 55, 89, 0.20);
+  --panel-shadow: 0 2px 10px rgba(13, 79, 77, 0.22);
+  --panel-radius: 10px;
+  --panel-divider: rgba(44, 55, 89, 0.18);
+  --soft-bg: #f1f9f8;
+
+  --title-color: #2c3759;
+  --sub-text-color: #5d6680;
+  --version-text: #b6e4df;
+
+  --test-fill-bg: #ffffff;
+  --test-fill-border: #5dd5cb;
+  --test-fill-text: #1f8079;
+  --test-fill-hover-bg: #d6efed;
+  --test-fill-hover-text: #155c57;
+
+  --help-btn-border: #5dd5cb;
+  --help-btn-text: #1f8079;
+  --help-btn-hover-bg: #d6efed;
+  --help-btn-hover-text: #155c57;
+
+  /* Consent: mint/teal tint, no coral. */
+  --consent-bg: #d6efed;
+  --consent-border: #5dd5cb;
+  --consent-text: #0d4f4d;
+  --consent-text-strong: #062a29;
+  --consent-accent: #1f8079;
+
+  /* Matches intro: navy tint, picking up the second FTH band colour. */
+  --intro-bg: #e7eaf3;
+  --intro-border: #b8c0d6;
+  --intro-accent: #2c3759;
+  --intro-text: #1d2440;
+  --intro-text-strong: #0a1126;
+
+  --guidance-link-bg: #d6efed;
+  --guidance-link-accent: #1f8079;
+  --guidance-footer-border: #b6e4df;
+  --guidance-intro-h1: #2c3759;
+  --guidance-intro-text: #5d6680;
+
+  /* Bright FTH turquoise for every "selected" / highlighted option and
+     for the progress bar in both states. */
+  --progress-fill: #42d6d1;
+  --progress-fill-complete: #42d6d1;
+
+  /* Solid action buttons (Save, Email, Refresh, Admin save) use the
+     deep FTH navy. */
+  --btn-primary: #334267;
+  --btn-primary-hover: #1f2a4a;
+  --btn-primary-text: #ffffff;
+
+  /* Guidance left-edge highlights and box text both use FTH navy. */
+  --guidance-link-accent: #334267;
+}
+
+/* Frontier Bold: tint the guidance link cards' body text and link text
+   in the same FTH navy as the left-edge accent, so the cards read as a
+   coherent navy block instead of a generic grey list. */
+body.theme-frontier-bold .guidance-links li { color: #334267; }
+body.theme-frontier-bold .guidance-links a { color: #334267; }
+
+/* Frontier Bold: lift dark page-intro text to pale mint so it stays
+   readable on the deep-teal body background. */
+body.theme-frontier-bold .page-intro h1 { color: #ffffff; }
+body.theme-frontier-bold .page-intro p { color: #d6efed; }
+body.theme-frontier-bold .completeness-label { color: #d6efed; }
+body.theme-frontier-bold .completeness-bar { background: rgba(255,255,255,0.22); }
+
+/* Frontier Bold: every "highlighted option" (selected chip, day option,
+   visibility / search-pref toggle, filter chip) uses the bright FTH
+   turquoise. The grey "non" / "irrelevant" states are left alone so they
+   keep reading as deliberately muted. */
+body.theme-frontier-bold .chip.selected,
+body.theme-frontier-bold .chip-anyoption.selected,
+body.theme-frontier-bold .day-opt.selected,
+body.theme-frontier-bold .day-opt[data-val="part"].selected,
+body.theme-frontier-bold .day-opt[data-val="flexible"].selected,
+body.theme-frontier-bold .toggle-btn.selected,
+body.theme-frontier-bold .toggle-btn[data-val="open"].selected,
+body.theme-frontier-bold .toggle-btn[data-val="preferred"].selected,
+body.theme-frontier-bold .filter-chip.selected {
+  background: #42d6d1;
+  color: #062a29;
+  border-color: #1eb6b1;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #1a1a1a;
-  background: #cfc5ab;
+  color: var(--body-text);
+  background: var(--page-bg);
   min-height: 100vh;
 }
 
@@ -71,10 +368,11 @@ body {
 .tab-content.active { display: block; }
 .tab-inner { padding: 20px 18px; }
 
-/* Matches & Connected tabs: wrap content in a cream panel for readability */
+/* Matches & Guidance tabs: white panel with soft blue border */
 .tab-panel {
-  background: #f3eddb; border: 1px solid rgba(100, 80, 30, 0.2);
-  border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius); padding: 14px 16px; margin-bottom: 14px;
+  box-shadow: var(--panel-shadow);
 }
 
 /* Matches tab top row (title + refresh search) */
@@ -83,16 +381,16 @@ body {
   gap: 10px; margin-bottom: 10px;
 }
 .matches-top-title {
-  font-size: 15px; font-weight: 700; color: #3a2e10;
+  font-size: 15px; font-weight: 700; color: var(--title-color);
 }
 .btn-refresh-search {
   all: unset;
   display: inline-flex; align-items: center; gap: 5px; box-sizing: border-box;
   padding: 6px 14px; font-size: 12px; font-weight: 700;
-  color: #fff; background: #185FA5; border-radius: 7px; cursor: pointer;
+  color: var(--btn-primary-text); background: var(--btn-primary); border-radius: 7px; cursor: pointer;
   letter-spacing: 0.3px;
 }
-.btn-refresh-search:hover { background: #124a82; }
+.btn-refresh-search:hover { background: var(--btn-primary-hover); }
 .btn-refresh-search.spinning svg { animation: spin 0.7s linear infinite; }
 .btn-refresh-search:disabled { opacity: 0.6; cursor: default; }
 
@@ -111,32 +409,38 @@ body {
   all: unset;
   display: inline-flex; align-items: center; box-sizing: border-box;
   padding: 4px 10px; font-size: 11px; font-weight: 600;
-  color: #6e5d30; background: #f5efdb;
-  border: 1px dashed #b7a261; border-radius: 6px;
+  color: var(--test-fill-text); background: var(--test-fill-bg);
+  border: 1px dashed var(--test-fill-border); border-radius: 6px;
   cursor: pointer; letter-spacing: 0.3px; text-transform: uppercase;
 }
-.btn-test-fill:hover { background: #ede3c2; color: #3a2e10; }
+.btn-test-fill:hover {
+  background: var(--test-fill-hover-bg); color: var(--test-fill-hover-text);
+  border-color: var(--test-fill-text);
+}
 
 /* ─── Completeness ─────────────────────────────────────────────────── */
 .profile-completeness { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
 .completeness-bar { flex: 1; height: 4px; background: #e5e5e5; border-radius: 2px; overflow: hidden; }
-.completeness-fill { height: 100%; border-radius: 2px; background: #185FA5; transition: width 0.3s ease, background 0.3s; width: 0%; }
+.completeness-fill { height: 100%; border-radius: 2px; background: var(--progress-fill); transition: width 0.3s ease, background 0.3s; width: 0%; }
+.completeness-fill.complete { background: var(--progress-fill-complete); }
 .completeness-label { font-size: 12px; font-weight: 600; color: #888; white-space: nowrap; min-width: 110px; text-align: right; }
 
 /* ─── Form groups (Required / Optional) ───────────────────────────── */
 .form-group {
-  background: #f3eddb; border: 1px solid rgba(100, 80, 30, 0.2); border-radius: 12px;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
   padding: 16px 18px 4px; margin-bottom: 18px;
+  box-shadow: var(--panel-shadow);
 }
 .form-group-header {
   margin: -4px -4px 16px; padding: 4px 4px 12px;
-  border-bottom: 1px solid rgba(100, 80, 30, 0.18);
+  border-bottom: 1px solid var(--panel-divider);
 }
 .form-group-title {
-  font-size: 13px; font-weight: 700; color: #3a2e10;
+  font-size: 13px; font-weight: 700; color: var(--title-color);
   text-transform: uppercase; letter-spacing: 0.6px;
 }
-.form-group-sub { font-size: 12px; color: #6e5d30; margin-top: 3px; line-height: 1.5; }
+.form-group-sub { font-size: 12px; color: var(--sub-text-color); margin-top: 3px; line-height: 1.5; }
 
 /* ─── Form sections ────────────────────────────────────────────────── */
 .form-section { margin-bottom: 22px; }
@@ -269,8 +573,8 @@ body {
 
 /* ─── Form actions ─────────────────────────────────────────────────── */
 .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
-.btn-save { padding: 10px 22px; background: #4a88cc; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.btn-save:hover:not(:disabled) { background: #3a72b0; }
+.btn-save { padding: 10px 22px; background: var(--btn-primary); color: var(--btn-primary-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-save:hover:not(:disabled) { background: var(--btn-primary-hover); }
 .btn-save:disabled { background: #c7d5e5; color: #eef3f9; cursor: not-allowed; }
 .btn-danger-soft { padding: 10px 16px; background: transparent; color: #A32D2D; border: 1px solid #F09595; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn-danger-soft:hover { background: #FCEBEB; }
@@ -439,8 +743,8 @@ body {
 .empty-icon { font-size: 30px; margin-bottom: 10px; }
 .empty-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 6px; }
 .empty-sub { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 16px; max-width: 340px; margin-left: auto; margin-right: auto; }
-.btn-primary-sm { display: inline-block; padding: 9px 20px; background: #4a88cc; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
-.btn-primary-sm:hover { background: #3a72b0; }
+.btn-primary-sm { display: inline-block; padding: 9px 20px; background: var(--btn-primary); color: var(--btn-primary-text); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+.btn-primary-sm:hover { background: var(--btn-primary-hover); }
 
 /* ─── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 640px) {
@@ -509,10 +813,13 @@ body {
   all: unset;
   display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
   width: 26px; height: 26px; border-radius: 50%;
-  background: #fff; border: 1px solid #b7a261; color: #6e5d30;
+  background: #fff; border: 1px solid var(--help-btn-border); color: var(--help-btn-text);
   font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
 }
-.btn-help:hover { background: #ede3c2; color: #3a2e10; }
+.btn-help:hover {
+  background: var(--help-btn-hover-bg); color: var(--help-btn-hover-text);
+  border-color: var(--help-btn-text);
+}
 
 /* Danger-toned help button (sits next to "Delete my profile") */
 .btn-help-danger {
@@ -535,18 +842,18 @@ body {
 
 /* ─── Consent checkbox row ────────────────────────────────────────── */
 .consent-row {
-  background: #fff; border: 1px solid #b7a261; border-radius: 10px;
-  padding: 12px 14px; margin: 6px 0 14px;
+  background: var(--consent-bg); border: 1px solid var(--consent-border);
+  border-radius: 10px; padding: 12px 14px; margin: 6px 0 14px;
 }
 .consent-box {
   display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
 }
 .consent-box input[type="checkbox"] {
   flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px;
-  accent-color: #185FA5; cursor: pointer;
+  accent-color: var(--consent-accent); cursor: pointer;
 }
-.consent-text { font-size: 13px; color: #3a2e10; line-height: 1.55; }
-.consent-text strong { color: #111; font-weight: 700; }
+.consent-text { font-size: 13px; color: var(--consent-text); line-height: 1.55; }
+.consent-text strong { color: var(--consent-text-strong); font-weight: 700; }
 
 /* ─── "New" pill on match cards ───────────────────────────────────── */
 .ccard-new-pill {
@@ -560,11 +867,12 @@ body {
 
 /* ─── Matches intro paragraph ─────────────────────────────────────── */
 .matches-intro {
-  font-size: 12px; color: #3a2e10; line-height: 1.6;
-  padding: 10px 12px; background: #fffcee; border: 1px solid #e6d9aa;
+  font-size: 12px; color: var(--intro-text); line-height: 1.6;
+  padding: 10px 12px; background: var(--intro-bg); border: 1px solid var(--intro-border);
+  border-left: 3px solid var(--intro-accent);
   border-radius: 8px; margin-bottom: 12px;
 }
-.matches-intro strong { color: #111; font-weight: 700; }
+.matches-intro strong { color: var(--intro-text-strong); font-weight: 700; }
 
 /* ─── "How matching works" collapsible body ───────────────────────── */
 .how-section { margin-top: 8px; }
@@ -595,10 +903,11 @@ body {
 
 /* ─── Guidance tab ────────────────────────────────────────────────── */
 .guidance-intro { margin-bottom: 16px; }
-.guidance-intro h1 { font-size: 18px; font-weight: 700; color: #3a2e10; margin-bottom: 6px; }
-.guidance-intro p { font-size: 13px; color: #6e5d30; line-height: 1.65; }
+.guidance-intro h1 { font-size: 18px; font-weight: 700; color: var(--guidance-intro-h1); margin-bottom: 6px; }
+.guidance-intro p { font-size: 13px; color: var(--guidance-intro-text); line-height: 1.65; }
 .guidance-section {
-  background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px;
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
   padding: 12px 14px; margin-bottom: 10px;
 }
 .guidance-section-head {
@@ -611,8 +920,8 @@ body {
 }
 .guidance-links li {
   font-size: 13px; color: #333; line-height: 1.55;
-  padding: 7px 10px; background: #f8f6ec; border-radius: 7px;
-  border-left: 3px solid #b7a261;
+  padding: 7px 10px; background: var(--guidance-link-bg); border-radius: 7px;
+  border-left: 3px solid var(--guidance-link-accent);
 }
 .guidance-links a {
   color: #185FA5; font-weight: 600; text-decoration: none;
@@ -628,8 +937,8 @@ body {
 .guidance-bullets li { margin-bottom: 4px; }
 .guidance-bullets strong { color: #111; }
 .guidance-footer {
-  margin-top: 14px; padding-top: 12px; border-top: 1px solid #e6d9aa;
-  font-size: 12px; color: #888; line-height: 1.55; font-style: italic;
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--guidance-footer-border);
+  font-size: 12px; color: #6e7e8e; line-height: 1.55; font-style: italic;
 }
 
 /* ─── Version / What's new ────────────────────────────────────────── */
@@ -643,6 +952,18 @@ body {
   transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
 .version-btn:hover { color: #555; background: #f4f4f1; border-color: rgba(0,0,0,0.18); }
+
+.theme-btn {
+  all: unset; box-sizing: border-box;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  color: #888; background: transparent; border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.theme-btn:hover { color: #185FA5; background: #f4f4f1; border-color: rgba(0,0,0,0.18); }
+.theme-btn svg { flex-shrink: 0; }
 
 .changelog-entry {
   margin-top: 14px; padding-top: 12px;
@@ -715,7 +1036,7 @@ body {
 
 /* ─── Version number ───────────────────────────────────────────────── */
 .app-version {
-  text-align: center; font-size: 11px; color: #ccc;
+  text-align: center; font-size: 11px; color: var(--version-text);
   padding: 10px 0 20px; user-select: none; letter-spacing: 0.3px;
 }
 
@@ -758,7 +1079,7 @@ body {
 .collapsible-sub { font-size: 11px; color: #888; flex: 1; }
 .collapsible-arrow { font-size: 11px; color: #bbb; transition: transform 0.2s; }
 .collapsible-section.open .collapsible-arrow { transform: rotate(90deg); }
-.collapsible-body { display: none; padding: 12px 14px 14px; background: #fafaf7; }
+.collapsible-body { display: none; padding: 12px 14px 14px; background: var(--soft-bg); }
 .collapsible-section.open .collapsible-body { display: block; }
 .collapsible-intro {
   font-size: 12px; color: #555; line-height: 1.7; margin-bottom: 10px;
@@ -826,7 +1147,7 @@ body {
   border: 1px solid #FAC775; border-radius: 7px; padding: 9px 12px; margin-bottom: 18px; line-height: 1.5;
 }
 .admin-weights { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
-.admin-weight-row { background: #fafaf7; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 12px 14px; }
+.admin-weight-row { background: var(--soft-bg); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 12px 14px; }
 .admin-weight-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
 .admin-weight-label { font-size: 13px; font-weight: 600; color: #222; }
 .admin-weight-val { font-size: 13px; font-weight: 700; color: #185FA5; min-width: 44px; text-align: right; }
@@ -843,7 +1164,7 @@ body {
 .admin-default-btn:hover { color: #555; background: #f0f0ee; }
 
 .admin-grade-section {
-  background: #fafaf7; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px;
+  background: var(--soft-bg); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px;
   padding: 12px 14px; margin-bottom: 16px;
 }
 .admin-grade-controls { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
@@ -861,10 +1182,10 @@ body {
 
 .admin-actions { display: flex; gap: 10px; margin-bottom: 14px; }
 .admin-save-btn {
-  flex: 1; padding: 9px 16px; background: #4a88cc; color: #fff;
+  flex: 1; padding: 9px 16px; background: var(--btn-primary); color: var(--btn-primary-text);
   border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer;
 }
-.admin-save-btn:hover { background: #3a72b0; }
+.admin-save-btn:hover { background: var(--btn-primary-hover); }
 .admin-reset-btn {
   padding: 9px 16px; background: transparent; color: #888;
   border: 1px solid #ddd; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer;

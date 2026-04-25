@@ -534,7 +534,7 @@ function buildCard(matchObj, context) {
     </div>`;
   }
 
-  const btnBlue = `background:#185FA5;color:#fff;`;
+  const btnBlue = `background:var(--btn-primary);color:var(--btn-primary-text);`;
   const btnGhost = `background:transparent;color:#999;border:0.5px solid #ccc;`;
   const btnBase = `all:unset;display:block;width:100%;box-sizing:border-box;text-align:center;font-size:12px;font-weight:500;padding:6px 0;border-radius:7px;cursor:pointer;`;
 
@@ -747,10 +747,11 @@ function updateCompleteness() {
   if (location) filled++;
 
   const pct = Math.round((filled / 5) * 100);
-  document.getElementById('complFill').style.width = pct + '%';
+  const fill = document.getElementById('complFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('complete', pct === 100);
   const labels = ['Profile incomplete', 'Getting started', 'Keep going…', 'Half way there', 'Almost there', 'Profile complete'];
   document.getElementById('complLabel').textContent = labels[filled] || 'Profile complete';
-  document.getElementById('complFill').style.background = pct === 100 ? '#27500A' : '#185FA5';
 
   updateSaveButtonState();
 }
@@ -1320,6 +1321,36 @@ document.getElementById('deleteHelpBtn').addEventListener('click', () => {
 
 function closeDeleteHelp() { document.getElementById('deleteHelpOverlay').classList.remove('open'); }
 function closeDeleteHelpIfBg(e) { if (e.target === document.getElementById('deleteHelpOverlay')) closeDeleteHelp(); }
+
+// ─── Theme toggle (Modern / Classic / Frontier) ─────────────────────────────
+
+const THEME_KEY = 'pairup_theme_v1';
+const THEMES = [
+  { id: 'modern',         label: 'Modern',        className: '' },
+  { id: 'classic',        label: 'Classic',       className: 'theme-classic' },
+  { id: 'simple',         label: 'Simple',        className: 'theme-simple' },
+  { id: 'frontier',       label: 'Frontier',      className: 'theme-frontier' },
+  { id: 'frontier-bold',  label: 'Frontier Bold', className: 'theme-frontier-bold' },
+];
+
+function applyTheme(id) {
+  const theme = THEMES.find(t => t.id === id) || THEMES[0];
+  THEMES.forEach(t => { if (t.className) document.body.classList.remove(t.className); });
+  if (theme.className) document.body.classList.add(theme.className);
+  const label = document.getElementById('themeBtnLabel');
+  if (label) label.textContent = theme.label;
+  localStorage.setItem(THEME_KEY, theme.id);
+}
+
+function cycleTheme() {
+  const current = localStorage.getItem(THEME_KEY) || 'modern';
+  const idx = THEMES.findIndex(t => t.id === current);
+  const next = THEMES[(idx + 1) % THEMES.length];
+  applyTheme(next.id);
+}
+
+applyTheme(localStorage.getItem(THEME_KEY) || 'modern');
+document.getElementById('themeBtn').addEventListener('click', cycleTheme);
 
 // ─── Version / what's new modal ─────────────────────────────────────────────
 
