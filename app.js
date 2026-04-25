@@ -127,17 +127,20 @@ function visibilityOf(candidate) {
 
 // ─── Day complementarity ─────────────────────────────────────────────────────
 
+// Flexible is treated as "no constraint": pairing flexible with anything
+// scores 0.8 regardless of the other side. The remaining values lean toward
+// rewarding usable cover (full+non = perfect, full+full = useless overlap).
 const DAY_PAIR_SCORES = {
   'full+non': 1.0, 'non+full': 1.0,
   'full+flexible': 0.8, 'flexible+full': 0.8,
+  'flexible+flexible': 0.8,
+  'flexible+part': 0.8, 'part+flexible': 0.8,
+  'flexible+non': 0.8, 'non+flexible': 0.8,
   'part+non': 0.6, 'non+part': 0.6,
-  'part+flexible': 0.5, 'flexible+part': 0.5,
-  'flexible+flexible': 0.4,
-  'part+part': 0.3,
+  'part+part': 0.7,
+  'full+part': 0.5, 'part+full': 0.5,
   'non+non': 0.2,
   'full+full': 0.0,
-  'full+part': 0.1, 'part+full': 0.1,
-  'non+flexible': 0.3, 'flexible+non': 0.3,
 };
 
 function dayComplementarityScore(userDays, candDays) {
