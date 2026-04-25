@@ -94,9 +94,9 @@ body.theme-classic {
   --guidance-intro-text: #6e5d30;
 }
 
-/* ─── Theme: Frontier (frontiertechhub.org-inspired) ──────────────── */
-/* High-contrast white-led layout, sharp corners, single warm accent. */
-body.theme-frontier {
+/* ─── Theme: Simple (clean greyscale + warm orange accent) ────────── */
+/* High-contrast white-led layout, sharp corners, a single warm accent. */
+body.theme-simple {
   --page-bg: #f5f5f5;
 
   --panel-bg: #ffffff;
@@ -138,6 +138,61 @@ body.theme-frontier {
   --guidance-footer-border: #eeeeee;
   --guidance-intro-h1: #111111;
   --guidance-intro-text: #555555;
+}
+
+/* ─── Theme: Frontier (Frontier Tech Hub-inspired vibrant) ────────── */
+/* Lifted from the FTH brand assets (header screenshot + their static.css):
+     #1f8079 deep teal       (header band)
+     #2c3759 deep navy       (second band — also custom.css #343047)
+     #5dd5cb bright mint     ("Explore in-depth evidence" heading)
+     #f0523d warm coral      (one-off accent in their static.css)
+   Navy is used for headings, deep teal for primary chrome, mint for
+   highlights, coral for the consent/agree action. */
+body.theme-frontier {
+  --page-bg: #e6f3f1;
+
+  --panel-bg: #ffffff;
+  --panel-border: rgba(31, 128, 121, 0.22);
+  --panel-shadow: 0 1px 0 rgba(31, 128, 121, 0.06);
+  --panel-radius: 8px;
+  --panel-divider: rgba(31, 128, 121, 0.18);
+  --soft-bg: #f1f9f8;
+
+  --title-color: #2c3759;
+  --sub-text-color: #5d6680;
+  --version-text: #7a9a99;
+
+  --test-fill-bg: #d6efed;
+  --test-fill-border: #5dd5cb;
+  --test-fill-text: #1f8079;
+  --test-fill-hover-bg: #b6e4df;
+  --test-fill-hover-text: #155c57;
+
+  --help-btn-border: #5dd5cb;
+  --help-btn-text: #1f8079;
+  --help-btn-hover-bg: #b6e4df;
+  --help-btn-hover-text: #155c57;
+
+  /* Consent: warm coral tint so the "agree" action pops against the teal
+     page chrome. */
+  --consent-bg: #fdeae6;
+  --consent-border: #f5b3a5;
+  --consent-text: #5a1f12;
+  --consent-text-strong: #2e0e08;
+  --consent-accent: #f0523d;
+
+  /* Matches intro: bright-mint tint with a deep-teal left border. */
+  --intro-bg: #d6efed;
+  --intro-border: #9be0d8;
+  --intro-accent: #1f8079;
+  --intro-text: #1d3942;
+  --intro-text-strong: #0a2225;
+
+  --guidance-link-bg: #d6efed;
+  --guidance-link-accent: #1f8079;
+  --guidance-footer-border: #b6e4df;
+  --guidance-intro-h1: #2c3759;
+  --guidance-intro-text: #5d6680;
 }
 
 body {

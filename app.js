@@ -1327,6 +1327,7 @@ const THEME_KEY = 'pairup_theme_v1';
 const THEMES = [
   { id: 'modern',   label: 'Modern',   className: '' },
   { id: 'classic',  label: 'Classic',  className: 'theme-classic' },
+  { id: 'simple',   label: 'Simple',   className: 'theme-simple' },
   { id: 'frontier', label: 'Frontier', className: 'theme-frontier' },
 ];
 
