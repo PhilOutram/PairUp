@@ -1361,6 +1361,19 @@ document.getElementById('versionBtn').addEventListener('click', () => {
 function closeVersion() { document.getElementById('versionOverlay').classList.remove('open'); }
 function closeVersionIfBg(e) { if (e.target === document.getElementById('versionOverlay')) closeVersion(); }
 
+// ─── Matches intro modal ────────────────────────────────────────────────────
+
+document.getElementById('matchesIntroBtn').addEventListener('click', () => {
+  document.getElementById('matchesIntroOverlay').classList.add('open');
+});
+
+function closeMatchesIntro() {
+  document.getElementById('matchesIntroOverlay').classList.remove('open');
+}
+function closeMatchesIntroIfBg(e) {
+  if (e.target === document.getElementById('matchesIntroOverlay')) closeMatchesIntro();
+}
+
 // ─── Optional-info help modal ───────────────────────────────────────────────
 
 document.getElementById('optionalHelpBtn').addEventListener('click', () => {

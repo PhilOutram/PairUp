@@ -380,9 +380,13 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; margin-bottom: 10px;
 }
+.matches-top-title-row {
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0;
+}
 .matches-top-title {
   font-size: 15px; font-weight: 700; color: var(--title-color);
 }
+.btn-help-sm { width: 22px; height: 22px; font-size: 12px; }
 .btn-refresh-search {
   all: unset;
   display: inline-flex; align-items: center; gap: 5px; box-sizing: border-box;
@@ -625,10 +629,11 @@ body {
 
 /* ─── Match / connection cards ─────────────────────────────────────── */
 .ccard {
-  background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 10px;
-  display: flex; overflow: hidden; margin-bottom: 6px;
+  background: #fff; border: 1px solid rgba(0,0,0,0.14); border-radius: 10px;
+  display: flex; overflow: hidden; margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.04);
 }
-.ccard-accent { width: 5px; flex-shrink: 0; }
+.ccard-accent { width: 6px; flex-shrink: 0; }
 .ccard-inner { flex: 1; padding: 9px 12px; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ccard-left { flex: 1; min-width: 0; }
 .ccard-right { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; width: 82px; }
@@ -791,10 +796,10 @@ body {
 /* Ensure buttons stay a decent tap target on touch devices */
 @media (max-width: 420px) {
   .nav-tab { padding: 9px 8px; }
-  .ccard-accent { width: 4px; }
+  .ccard-accent { width: 5px; }
   .collapsible-header { padding: 10px 12px; gap: 6px; }
   .collapsible-title { font-size: 12px; }
-  .collapsible-sub { font-size: 10px; }
+  .collapsible-sub { display: none; }
 }
 
 /* ─── "Match to any" chip: highlight the default / easy option ────── */
@@ -1068,15 +1073,21 @@ body {
 }
 .collapsible-section.prefs-section { margin-top: 8px; }
 .collapsible-header {
-  all: unset; display: flex; align-items: center; gap: 10px;
+  all: unset; display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
   width: 100%; box-sizing: border-box; padding: 11px 14px;
   cursor: pointer; background: #fff; border-bottom: 1px solid transparent;
   transition: background 0.1s;
 }
 .collapsible-header:hover { background: #f8f8f5; }
 .collapsible-section.open .collapsible-header { border-bottom-color: rgba(0,0,0,0.08); }
-.collapsible-title { font-size: 13px; font-weight: 700; color: #111; }
-.collapsible-sub { font-size: 11px; color: #888; flex: 1; }
+.collapsible-title {
+  font-size: 13px; font-weight: 700; color: #111;
+  white-space: nowrap; flex-shrink: 0;
+}
+.collapsible-sub {
+  font-size: 11px; color: #888; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .collapsible-arrow { font-size: 11px; color: #bbb; transition: transform 0.2s; }
 .collapsible-section.open .collapsible-arrow { transform: rotate(90deg); }
 .collapsible-body { display: none; padding: 12px 14px 14px; background: var(--soft-bg); }

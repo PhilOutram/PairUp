@@ -346,7 +346,13 @@
         </div>
         <div id="matchesContent" class="tab-panel" style="display:none">
           <div class="matches-top-row">
-            <div class="matches-top-title">Potential matches</div>
+            <div class="matches-top-title-row">
+              <div class="matches-top-title">Potential matches</div>
+              <button type="button" class="btn-help btn-help-sm" id="matchesIntroBtn" title="What are these?">
+                <span aria-hidden="true">?</span>
+                <span class="sr-only">About potential matches</span>
+              </button>
+            </div>
             <button class="btn-refresh-search" id="refreshSearchBtn" type="button" title="Re-run the search with your current settings">
               <svg width="12" height="12" viewBox="0 0 15 15" fill="none">
                 <path d="M1.5 7.5a6 6 0 1 0 6-6 6 6 0 0 0-4.24 1.76" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -354,12 +360,6 @@
               </svg>
               Refresh
             </button>
-          </div>
-
-          <div class="matches-intro">
-            These are people whose profiles could complement yours. Use <strong>Email</strong> to reach out,
-            or <strong>Dismiss</strong> to hide a profile from your list.
-            Click <em>How matching works</em> below or any match percentage to see the logic behind the score.
           </div>
 
           <div class="collapsible-section prefs-section" id="prefsSection">
@@ -415,40 +415,40 @@
           <div class="collapsible-section how-section" id="howSection">
             <button class="collapsible-header" id="howToggle" type="button">
               <span class="collapsible-title">How matching works</span>
-              <span class="collapsible-sub">Gates, ranking, and what the % score means</span>
+              <span class="collapsible-sub">Who shows up, and what the % score means</span>
               <span class="collapsible-arrow">▸</span>
             </button>
             <div class="collapsible-body" id="howBody">
-              <p class="how-lead">PairUp shows people whose profiles could work alongside yours. There are two steps:</p>
+              <p class="how-lead">PairUp finds people whose profiles could work alongside yours. It does this in two steps.</p>
               <div class="how-step">
-                <div class="how-step-head">1. Gating &mdash; who appears at all</div>
+                <div class="how-step-head">1. Who shows up on your list</div>
                 <div class="how-step-body">
-                  <p>A profile only appears on your list if <em>both</em> of these are true:</p>
+                  <p>Two sets of rules decide who you see:</p>
                   <ul>
-                    <li>Your profile passes <strong>their</strong> &ldquo;Who can find me&rdquo; rules. (If they&rsquo;ve set Grade to &ldquo;Must match&rdquo;, you won&rsquo;t see them unless your grade matches.)</li>
-                    <li>Their profile passes <strong>your</strong> &ldquo;How I want to find matches&rdquo; settings. (Defaults: Grade and Directorate are &ldquo;Definite&rdquo;, so only same-grade people with a shared directorate appear.)</li>
+                    <li><strong>Their rules about who can find them.</strong> Each person sets &ldquo;Who can find me&rdquo; on their own profile. If they&rsquo;ve said &ldquo;only people on my grade can see me&rdquo; and you&rsquo;re a different grade, they won&rsquo;t appear on your list.</li>
+                    <li><strong>Your rules about what you want.</strong> In &ldquo;How I want to find matches&rdquo;, anything you mark <em>Definite</em> works as a must-have. By default, Grade and Directorate are Definite, so you&rsquo;ll only see people on your grade who share a directorate with you.</li>
                   </ul>
-                  <p>Change &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in <em>How I want to find matches</em> to see a wider set.</p>
+                  <p>If your list is too short, change &ldquo;Definite&rdquo; to &ldquo;Preferred&rdquo; in <em>How I want to find matches</em>. That keeps it as a nice-to-have rather than a must-have, and you&rsquo;ll see more people.</p>
                 </div>
               </div>
               <div class="how-step">
-                <div class="how-step-head">2. Ranking &mdash; the % score</div>
+                <div class="how-step-head">2. The % score on each card</div>
                 <div class="how-step-body">
-                  <p>Profiles that pass the gates are ranked 0&ndash;100 %. The score combines:</p>
+                  <p>Everyone who shows up gets a score from 0&ndash;100 %. The higher the score, the better the fit. Points come from:</p>
                   <ul>
-                    <li><strong>Day pattern complementarity</strong> &mdash; up to 40 pts. Your working days and theirs are compared day by day; &ldquo;full + non&rdquo; scores highest, &ldquo;full + full&rdquo; scores zero.</li>
-                    <li><strong>Extra directorate overlap</strong> &mdash; up to 20 pts, for each directorate shared beyond the first.</li>
-                    <li><strong>Recency</strong> &mdash; up to 20 pts. Profiles active in the last two weeks score full marks; nothing for &gt; 6 months.</li>
+                    <li><strong>How well your working days fit together</strong> &mdash; up to 40 pts. The best fit is when one of you works a day the other has off, so you cover the whole week between you. Two people working the same day at the same time scores zero.</li>
+                    <li><strong>Extra shared directorates</strong> &mdash; up to 20 pts, for each one shared beyond the first.</li>
+                    <li><strong>How recently they&rsquo;ve used PairUp</strong> &mdash; up to 20 pts. Active in the last two weeks scores full marks; nothing if they haven&rsquo;t been on in over six months.</li>
                     <li><strong>Same location</strong> &mdash; 10 pts.</li>
-                    <li><strong>Preferred bonuses</strong> &mdash; up to 30 pts, from anything you&rsquo;ve set to &ldquo;Preferred&rdquo;.</li>
-                    <li><strong>Negotiable pattern</strong> &mdash; up to 3 pts.</li>
+                    <li><strong>Bonuses for &ldquo;Preferred&rdquo; matches</strong> &mdash; up to 30 pts, from anything you&rsquo;ve marked as Preferred.</li>
+                    <li><strong>They&rsquo;re open to changing their pattern</strong> &mdash; up to 3 pts.</li>
                   </ul>
                   <p class="how-note">
                     <span class="how-pill how-pill-green">65&ndash;100 %</span> strong fit &middot;
                     <span class="how-pill how-pill-amber">40&ndash;64 %</span> partial fit &middot;
                     <span class="how-pill how-pill-red">&lt; 40 %</span> weak fit
                   </p>
-                  <p>Click any match percentage to see the exact breakdown for that profile.</p>
+                  <p>Click any match percentage on a card to see exactly where its points came from.</p>
                 </div>
               </div>
             </div>
@@ -639,6 +639,34 @@
       <div class="modal-section">
         <div class="modal-section-label">Coming back</div>
         <p class="modal-text">You can register again at any time by filling in a new profile &mdash; it just starts fresh.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matches intro / "what are these?" modal -->
+  <div class="modal-overlay" id="matchesIntroOverlay" onclick="closeMatchesIntroIfBg(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeMatchesIntro()">x</button>
+      <div class="modal-name">About potential matches</div>
+      <div class="modal-grade-loc">What you&rsquo;re seeing on this tab</div>
+      <div class="modal-section">
+        <p class="modal-text">These are people whose profiles could complement yours.</p>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">On each card</div>
+        <ul class="help-list">
+          <li><strong>Email</strong> opens your mail client with a pre-written intro and your profile summary.</li>
+          <li><strong>Dismiss</strong> hides that profile from your list.</li>
+          <li><strong>Full profile&hellip;</strong> shows everything they&rsquo;ve filled in.</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Tweaking your results</div>
+        <ul class="help-list">
+          <li><em>How I want to find matches</em> &mdash; widen or tighten the search.</li>
+          <li><em>How matching works</em> &mdash; explains the gates and the % score.</li>
+          <li>Click any match percentage to see the breakdown for that profile.</li>
+        </ul>
       </div>
     </div>
   </div>
