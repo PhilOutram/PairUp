@@ -636,6 +636,10 @@ body.theme-frontier-bold .section-label { color: #d6efed; }
   display: flex; overflow: hidden; margin-bottom: 18px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.08);
 }
+/* Frontier Bold has a dark teal page background; a dim card border
+   disappears against it. Use the same deep FTH navy as the action
+   buttons so the cards read as deliberate panels. */
+body.theme-frontier-bold .ccard { border-color: #334267; }
 .ccard-accent { width: 8px; flex-shrink: 0; }
 .ccard-inner { flex: 1; padding: 14px 16px; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ccard-left { flex: 1; min-width: 0; }
