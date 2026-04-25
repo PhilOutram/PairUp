@@ -24,6 +24,11 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 11px 20px 8px;
+  gap: 10px;
+}
+.header-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .brand { display: flex; align-items: baseline; gap: 10px; }
 .brand-logo { font-size: 19px; letter-spacing: -0.5px; font-weight: 700; }
@@ -265,7 +270,8 @@ body {
 /* ─── Form actions ─────────────────────────────────────────────────── */
 .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 .btn-save { padding: 10px 22px; background: #4a88cc; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-.btn-save:hover { background: #3a72b0; }
+.btn-save:hover:not(:disabled) { background: #3a72b0; }
+.btn-save:disabled { background: #c7d5e5; color: #eef3f9; cursor: not-allowed; }
 .btn-danger-soft { padding: 10px 16px; background: transparent; color: #A32D2D; border: 1px solid #F09595; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn-danger-soft:hover { background: #FCEBEB; }
 .save-status { margin-top: 10px; font-size: 13px; font-weight: 600; display: none; padding: 8px 12px; border-radius: 8px; }
@@ -437,16 +443,190 @@ body {
 .btn-primary-sm:hover { background: #3a72b0; }
 
 /* ─── Responsive ───────────────────────────────────────────────────── */
-@media (max-width: 500px) {
+@media (max-width: 640px) {
   .tab-inner { padding: 14px 12px; }
   .style-grid { grid-template-columns: 1fr; }
   .days-grid { max-width: 100%; }
   .brand-tag { display: none; }
-  .refresh-btn span { display: none; }
-  .header-inner { padding: 9px 12px 6px; }
-  .nav-tabs { padding: 0 6px; }
-  .nav-tab { padding: 8px 10px; font-size: 12px; gap: 4px; }
+  .header-inner { padding: 9px 10px 6px; gap: 6px; flex-wrap: wrap; }
+  .header-actions { gap: 4px; }
+  .privacy-btn span, .about-btn span, .admin-btn span, .refresh-btn span { display: none; }
+  .privacy-btn, .about-btn, .admin-btn, .refresh-btn { padding: 7px 9px; }
+  .nav-tabs { padding: 0 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .nav-tab { padding: 9px 10px; font-size: 12px; gap: 4px; flex-shrink: 0; }
+  .page-intro-row { flex-wrap: wrap; gap: 8px; }
+
+  /* Cards: stack right-column (email / dismiss) buttons below the content */
+  .ccard-inner { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
+  .ccard-right { flex-direction: row; width: auto; gap: 8px; }
+  .ccard-right > * { flex: 1; }
+
+  /* Day matrix: narrow header column so the four options still fit side by side */
+  .day-row { grid-template-columns: 44px repeat(4, 1fr); gap: 4px; }
+  .day-opt { font-size: 11px; padding: 7px 0; }
+
+  /* Visibility / search-pref toggles stack label above buttons */
+  .visibility-row { flex-direction: column; align-items: stretch; }
+  .toggle-row, .toggle-row-3 { justify-content: stretch; }
+  .toggle-row .toggle-btn, .toggle-row-3 .toggle-btn { flex: 1; text-align: center; }
+
+  .form-group-title-row { flex-wrap: wrap; gap: 8px; }
+  .matches-top-row { flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 7px 14px; font-size: 13px; }
+  .filter-chip { padding: 6px 12px; }
+  .how-pill { font-size: 10px; padding: 2px 6px; }
+
+  /* Modals: tighter padding and full-height scroll */
+  .modal-overlay { padding: 12px; }
+  .modal-box { padding: 18px 16px; }
+
+  /* Test-fill button moves below the heading to avoid squeezing it */
+  .btn-test-fill { font-size: 10px; padding: 4px 8px; }
 }
+
+/* Ensure buttons stay a decent tap target on touch devices */
+@media (max-width: 420px) {
+  .nav-tab { padding: 9px 8px; }
+  .ccard-accent { width: 4px; }
+  .collapsible-header { padding: 10px 12px; gap: 6px; }
+  .collapsible-title { font-size: 12px; }
+  .collapsible-sub { font-size: 10px; }
+}
+
+/* ─── "Match to any" chip: highlight the default / easy option ────── */
+.chip-anyoption {
+  border-style: dashed; border-color: #b7cfe6; color: #0C447C; font-weight: 600;
+}
+.chip-anyoption:hover { background: #eaf3fb; }
+.chip-anyoption.selected { background: #daeaf8; border-color: #9cc7f0; border-style: solid; }
+
+/* ─── Help button (Optional-info section) ─────────────────────────── */
+.form-group-title-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+}
+.form-group-title-row > div:first-child { flex: 1; min-width: 0; }
+.btn-help {
+  all: unset;
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #fff; border: 1px solid #b7a261; color: #6e5d30;
+  font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+}
+.btn-help:hover { background: #ede3c2; color: #3a2e10; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.help-list {
+  margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: #333; line-height: 1.6;
+}
+.help-list li { margin-bottom: 4px; }
+
+/* ─── Consent checkbox row ────────────────────────────────────────── */
+.consent-row {
+  background: #fff; border: 1px solid #b7a261; border-radius: 10px;
+  padding: 12px 14px; margin: 6px 0 14px;
+}
+.consent-box {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+}
+.consent-box input[type="checkbox"] {
+  flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px;
+  accent-color: #185FA5; cursor: pointer;
+}
+.consent-text { font-size: 13px; color: #3a2e10; line-height: 1.55; }
+.consent-text strong { color: #111; font-weight: 700; }
+
+/* ─── "New" pill on match cards ───────────────────────────────────── */
+.ccard-new-pill {
+  display: inline-block; margin-left: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #fff; background: #0F6E56;
+  padding: 2px 7px; border-radius: 8px;
+  vertical-align: middle;
+}
+
+/* ─── Matches intro paragraph ─────────────────────────────────────── */
+.matches-intro {
+  font-size: 12px; color: #3a2e10; line-height: 1.6;
+  padding: 10px 12px; background: #fffcee; border: 1px solid #e6d9aa;
+  border-radius: 8px; margin-bottom: 12px;
+}
+.matches-intro strong { color: #111; font-weight: 700; }
+
+/* ─── "How matching works" collapsible body ───────────────────────── */
+.how-section { margin-top: 8px; }
+.how-lead { font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 10px; }
+.how-step {
+  background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 8px;
+}
+.how-step-head {
+  font-size: 12px; font-weight: 700; color: #0C447C;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.how-step-body { font-size: 12px; color: #333; line-height: 1.6; }
+.how-step-body p { margin-bottom: 6px; }
+.how-step-body ul {
+  margin: 4px 0 8px; padding-left: 18px;
+}
+.how-step-body li { margin-bottom: 4px; }
+.how-step-body li strong { color: #111; }
+.how-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 !important; }
+.how-pill {
+  display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; letter-spacing: 0.3px;
+}
+.how-pill-green { background: #EAF3DE; color: #27500A; }
+.how-pill-amber { background: #FAEEDA; color: #633806; }
+.how-pill-red { background: #FCEBEB; color: #A32D2D; }
+
+/* ─── Guidance tab ────────────────────────────────────────────────── */
+.guidance-intro { margin-bottom: 16px; }
+.guidance-intro h1 { font-size: 18px; font-weight: 700; color: #3a2e10; margin-bottom: 6px; }
+.guidance-intro p { font-size: 13px; color: #6e5d30; line-height: 1.65; }
+.guidance-section {
+  background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px;
+}
+.guidance-section-head {
+  font-size: 12px; font-weight: 700; color: #0C447C;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.guidance-links {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.guidance-links li {
+  font-size: 13px; color: #333; line-height: 1.55;
+  padding: 7px 10px; background: #f8f6ec; border-radius: 7px;
+  border-left: 3px solid #b7a261;
+}
+.guidance-links a {
+  color: #185FA5; font-weight: 600; text-decoration: none;
+}
+.guidance-links a:hover { text-decoration: underline; }
+.guidance-paragraph {
+  font-size: 13px; color: #333; line-height: 1.65; margin-bottom: 8px;
+}
+.guidance-paragraph strong { color: #111; font-weight: 700; }
+.guidance-bullets {
+  margin: 4px 0 10px; padding-left: 18px; font-size: 13px; color: #333; line-height: 1.6;
+}
+.guidance-bullets li { margin-bottom: 4px; }
+.guidance-bullets strong { color: #111; }
+.guidance-footer {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid #e6d9aa;
+  font-size: 12px; color: #888; line-height: 1.55; font-style: italic;
+}
+
+/* ─── Score modal footer note ─────────────────────────────────────── */
+.modal-score-note {
+  margin-top: 12px; font-size: 11px; color: #888; line-height: 1.6;
+  padding: 8px 10px; background: #f8f8f5; border-radius: 6px;
+}
+.modal-score-note em { font-style: italic; color: #555; }
 
 /* ─── Privacy button ───────────────────────────────────────────────── */
 .privacy-btn {

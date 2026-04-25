@@ -46,18 +46,18 @@ const DIR_SETS = [
   ['Economic & Trade', 'Climate & Environment'],
   ['Economic & Trade', 'Programme Delivery'],
   ['Economic & Trade', 'Security & Defence'],
-  ['Economic & Trade', 'Open to any'],
+  ['Economic & Trade', 'Match to any'],
   ['Climate & Environment'],
   ['Climate & Environment', 'Programme Delivery'],
   ['Climate & Environment', 'Overseas Network'],
-  ['Climate & Environment', 'Open to any'],
+  ['Climate & Environment', 'Match to any'],
   ['Programme Delivery'],
   ['Programme Delivery', 'HR & People'],
   ['Programme Delivery', 'Finance'],
-  ['Programme Delivery', 'Open to any'],
+  ['Programme Delivery', 'Match to any'],
   ['Security & Defence'],
   ['Security & Defence', 'Overseas Network'],
-  ['Security & Defence', 'Open to any'],
+  ['Security & Defence', 'Match to any'],
   ['HR & People'],
   ['HR & People', 'Corporate Services'],
   ['HR & People', 'Communications'],
@@ -71,9 +71,9 @@ const DIR_SETS = [
   ['Consular'],
   ['Overseas Network'],
   ['Corporate Services'],
-  ['Open to any'],
-  ['Open to any', 'Economic & Trade'],
-  ['Open to any', 'Programme Delivery'],
+  ['Match to any'],
+  ['Match to any', 'Economic & Trade'],
+  ['Match to any', 'Programme Delivery'],
 ];
 
 const DAYS_PATTERNS = [
@@ -116,7 +116,6 @@ const LOCATIONS = [
 
 const FTES = ['0.5 FTE', '0.6 FTE', '0.7 FTE', '0.8 FTE', '3 days', '22 hours', '30 hours', '4 days'];
 const NEGOTIABLES = ['yes', 'possibly', 'no', 'yes', 'possibly', ''];
-const STYLES = ['clean', 'collaborative', 'flexible', 'unsure', ''];
 
 const AVAILABILITIES = [
   'Looking for roles in stage 2 of the restructure',
@@ -198,7 +197,6 @@ GRADES.forEach((grade, gi) => {
       skills: SKILLS_POOL[idx % SKILLS_POOL.length],
       workingPatternNotes: PATTERN_NOTES[idx % PATTERN_NOTES.length],
       otherInfo: OTHER_INFO[idx % OTHER_INFO.length],
-      style: STYLES[idx % STYLES.length],
       location: loc.loc,
       overseas: loc.overseas,
       lastActive: NOW - ageDays * DAY,
