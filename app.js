@@ -1369,13 +1369,14 @@ function applyTheme(id) {
 }
 
 function cycleTheme() {
-  const current = localStorage.getItem(THEME_KEY) || 'modern';
+  const current = localStorage.getItem(THEME_KEY) || THEMES[0].id;
   const idx = THEMES.findIndex(t => t.id === current);
   const next = THEMES[(idx + 1) % THEMES.length];
   applyTheme(next.id);
 }
 
-applyTheme(localStorage.getItem(THEME_KEY) || 'modern');
+const savedTheme = localStorage.getItem(THEME_KEY);
+applyTheme(savedTheme || THEMES[Math.floor(Math.random() * THEMES.length)].id);
 document.getElementById('themeBtn').addEventListener('click', cycleTheme);
 
 // ─── Version / what's new modal ─────────────────────────────────────────────
