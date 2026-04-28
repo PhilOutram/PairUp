@@ -16,6 +16,7 @@ function defaultState() {
     profile: null,
     dismissed: [],
     showDismissed: false,
+    activelyLooking: true,
   };
 }
 
@@ -48,6 +49,7 @@ if (state.profile) {
   ['availability', 'fte', 'daysNegotiable', 'skills', 'workingPatternNotes', 'otherInfo']
     .forEach(k => { if (p[k] === undefined) p[k] = ''; });
 }
+if (state.activelyLooking === undefined) state.activelyLooking = true;
 // Drop leftover request/connection fields from older state schema.
 ['sentRequests', 'receivedRequests', 'connections', 'newConnBanner',
  'pendingTimers', 'hiddenSuggested', 'activeOverrides',
@@ -77,6 +79,13 @@ let seenMatches = loadSeenMatches();
 // The set of ids flagged as "new" on the current render. Populated by
 // renderMatches and cleared when the user leaves the tab.
 let currentNewIds = new Set();
+
+// Refresh-button churn (in-memory only, resets on reload). Each refresh hides
+// one currently-visible profile and reveals one previously-hidden profile,
+// simulating people joining and leaving the pool.
+let refreshHiddenIds = new Set();
+let refreshJustAddedId = null;
+let refreshSeeded = false;
 
 // ─── Admin weights (grade penalty mode only) ─────────────────────────────────
 
@@ -728,6 +737,7 @@ function switchTab(name) {
   }
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.tab-content').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  window.scrollTo(0, 0);
   if (name === 'matches') renderMatches();
 }
 
@@ -786,7 +796,8 @@ function updateSaveButtonState() {
   const btn = document.getElementById('saveProfile');
   const check = document.getElementById('consentCheck');
   if (!btn || !check) return;
-  btn.disabled = !check.checked;
+  const active = state.activelyLooking !== false;
+  btn.disabled = !check.checked || !active;
 }
 
 function loadProfileIntoForm() {
@@ -971,21 +982,65 @@ function showSaveStatus(msg, type) {
 // Consent checkbox gates the save button.
 document.getElementById('consentCheck').addEventListener('change', updateSaveButtonState);
 
+// ─── Actively-looking toggle ────────────────────────────────────────────────
+
+function applyActiveLookingState() {
+  const active = state.activelyLooking !== false;
+  document.body.classList.toggle('profile-form-disabled', !active);
+  const tab = document.getElementById('tab-profile');
+  if (tab) {
+    // Block keyboard input on form fields when inactive. The toggle itself
+    // sits outside .form-group / .form-actions so it stays enabled.
+    tab.querySelectorAll('input:not(#activeToggle), textarea, select, button:not(#activeToggle)')
+      .forEach(el => {
+        if (el.closest('.active-toggle-row')) return;
+        el.disabled = !active;
+      });
+  }
+  updateSaveButtonState();
+}
+
+document.getElementById('activeToggle').addEventListener('change', e => {
+  state.activelyLooking = e.target.checked;
+  saveState();
+  applyActiveLookingState();
+  if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
+});
+
 // ─── Render matches ──────────────────────────────────────────────────────────
 
 function renderMatches() {
+  const noProfileEl = document.getElementById('matchesNoProfile');
+  const inactiveEl = document.getElementById('matchesInactive');
+  const contentEl = document.getElementById('matchesContent');
+
   if (!state.profile) {
-    document.getElementById('matchesNoProfile').style.display = 'block';
-    document.getElementById('matchesContent').style.display = 'none';
+    noProfileEl.style.display = 'block';
+    inactiveEl.style.display = 'none';
+    contentEl.style.display = 'none';
+    currentNewIds = new Set();
+    updateBadges();
     return;
   }
-  document.getElementById('matchesNoProfile').style.display = 'none';
-  document.getElementById('matchesContent').style.display = 'block';
+  if (!state.activelyLooking) {
+    noProfileEl.style.display = 'none';
+    inactiveEl.style.display = 'block';
+    contentEl.style.display = 'none';
+    currentNewIds = new Set();
+    updateBadges();
+    return;
+  }
+  noProfileEl.style.display = 'none';
+  inactiveEl.style.display = 'none';
+  contentEl.style.display = 'block';
+
+  seedRefreshHiddenIfNeeded();
 
   const allMatches = getMatches();
   let visible = allMatches.filter(m => {
     const id = m.profile.id;
     if (!state.showDismissed && state.dismissed.includes(id)) return false;
+    if (refreshHiddenIds.has(id)) return false;
     return true;
   });
 
@@ -998,6 +1053,9 @@ function renderMatches() {
       currentNewIds.add(m.profile.id);
     }
   });
+  if (refreshJustAddedId && visible.some(m => m.profile.id === refreshJustAddedId)) {
+    currentNewIds.add(refreshJustAddedId);
+  }
 
   const cards = document.getElementById('matchCards');
   cards.innerHTML = '';
@@ -1146,16 +1204,55 @@ if (document.getElementById('filterActive')) {
 }
 
 // ─── Refresh button ──────────────────────────────────────────────────────────
-// "Refresh" now just re-renders with the current state. Anything unseen since
-// the last render keeps its "New" pill until the user leaves the tab.
+// Each refresh hides one random visible profile and unhides one previously-
+// hidden one (which gets a "New" pill), so the list churns a little to
+// simulate a live pool.
+
+function eligibleMatchIds() {
+  if (!state.profile || !state.activelyLooking) return [];
+  return getMatches()
+    .filter(m => !state.dismissed.includes(m.profile.id))
+    .map(m => m.profile.id);
+}
+
+function seedRefreshHiddenIfNeeded() {
+  if (refreshSeeded) return;
+  const eligible = eligibleMatchIds();
+  if (eligible.length < 4) return;
+  refreshSeeded = true;
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  shuffled.slice(0, 2).forEach(id => refreshHiddenIds.add(id));
+}
+
+function performRefreshSwap() {
+  const eligible = eligibleMatchIds();
+  if (eligible.length === 0) { refreshJustAddedId = null; return; }
+
+  const visibleIds = eligible.filter(id => !refreshHiddenIds.has(id));
+  if (visibleIds.length > 1) {
+    const idToHide = visibleIds[Math.floor(Math.random() * visibleIds.length)];
+    refreshHiddenIds.add(idToHide);
+  }
+
+  const hidden = [...refreshHiddenIds].filter(id => eligible.includes(id));
+  if (hidden.length > 0) {
+    const idToShow = hidden[Math.floor(Math.random() * hidden.length)];
+    refreshHiddenIds.delete(idToShow);
+    refreshJustAddedId = idToShow;
+  } else {
+    refreshJustAddedId = null;
+  }
+}
 
 function triggerRefresh(btn) {
   btn.classList.add('spinning');
   btn.disabled = true;
+  const onMatchesTab = document.getElementById('tab-matches').classList.contains('active');
+  if (onMatchesTab) performRefreshSwap();
   setTimeout(() => {
     btn.classList.remove('spinning');
     btn.disabled = false;
-    if (document.getElementById('tab-matches').classList.contains('active')) renderMatches();
+    if (onMatchesTab) renderMatches();
   }, 500);
 }
 
@@ -1312,6 +1409,9 @@ syncSearchPrefButtons();
 if (state.profile) {
   loadProfileIntoForm();
 }
+
+document.getElementById('activeToggle').checked = state.activelyLooking !== false;
+applyActiveLookingState();
 
 updateBadges();
 updateCompleteness();

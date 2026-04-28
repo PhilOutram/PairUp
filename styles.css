@@ -429,6 +429,48 @@ body {
 .completeness-fill.complete { background: var(--progress-fill-complete); }
 .completeness-label { font-size: 12px; font-weight: 600; color: #888; white-space: nowrap; min-width: 110px; text-align: right; }
 
+/* ─── Active-looking toggle ───────────────────────────────────────── */
+.active-toggle-row {
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  padding: 12px 16px; margin-bottom: 18px;
+  box-shadow: var(--panel-shadow);
+}
+.active-toggle {
+  display: flex; align-items: flex-start; gap: 12px;
+  cursor: pointer; user-select: none;
+}
+.active-toggle input[type="checkbox"] {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+.active-toggle-track {
+  position: relative; flex-shrink: 0; margin-top: 2px;
+  width: 36px; height: 20px; background: #c8c8c8;
+  border-radius: 999px; transition: background 0.2s;
+}
+.active-toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; background: #fff;
+  border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transition: left 0.2s;
+}
+.active-toggle input[type="checkbox"]:checked ~ .active-toggle-track { background: var(--btn-primary); }
+.active-toggle input[type="checkbox"]:checked ~ .active-toggle-track .active-toggle-thumb { left: 18px; }
+.active-toggle input[type="checkbox"]:focus-visible ~ .active-toggle-track {
+  outline: 2px solid var(--btn-primary); outline-offset: 2px;
+}
+.active-toggle-text { display: flex; flex-direction: column; gap: 2px; line-height: 1.4; }
+.active-toggle-title { font-size: 13px; font-weight: 700; color: var(--title-color); }
+.active-toggle-hint { font-size: 12px; color: var(--sub-text-color); }
+
+/* When the form is disabled (user is inactive), grey it out and block input. */
+.profile-form-disabled .form-group,
+.profile-form-disabled .collapsible-section,
+.profile-form-disabled .consent-row,
+.profile-form-disabled .form-actions {
+  opacity: 0.55; pointer-events: none;
+}
+
 /* ─── Form groups (Required / Optional) ───────────────────────────── */
 .form-group {
   background: var(--panel-bg); border: 1px solid var(--panel-border);

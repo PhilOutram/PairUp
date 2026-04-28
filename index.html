@@ -108,6 +108,17 @@
           <span class="completeness-label" id="complLabel">Profile incomplete</span>
         </div>
 
+        <div class="active-toggle-row">
+          <label class="active-toggle">
+            <input type="checkbox" id="activeToggle" checked>
+            <span class="active-toggle-track"><span class="active-toggle-thumb"></span></span>
+            <span class="active-toggle-text">
+              <span class="active-toggle-title">I&rsquo;m actively looking for a job-share partner</span>
+              <span class="active-toggle-hint">Deselect if you&rsquo;re not currently looking for a job-share partner and don&rsquo;t wish to appear in other users&rsquo; searches.</span>
+            </span>
+          </label>
+        </div>
+
         <div class="form-group">
           <div class="form-group-header">
             <div class="form-group-title">Required info</div>
@@ -342,6 +353,12 @@
           <div class="empty-icon">🔍</div>
           <div class="empty-title">Complete your profile first</div>
           <div class="empty-sub">Fill in your profile so we can find your best job share matches.</div>
+          <button class="btn-primary-sm" onclick="switchTab('profile')">Go to my profile</button>
+        </div>
+        <div id="matchesInactive" class="empty-state tab-panel" style="display:none">
+          <div class="empty-icon">⏸</div>
+          <div class="empty-title">You&rsquo;re not currently looking</div>
+          <div class="empty-sub">Your profile is set to inactive, so it won&rsquo;t appear in anyone else&rsquo;s searches and you won&rsquo;t see matches here. Toggle &ldquo;I&rsquo;m actively looking&rdquo; back on from your profile to start matching again.</div>
           <button class="btn-primary-sm" onclick="switchTab('profile')">Go to my profile</button>
         </div>
         <div id="matchesContent" style="display:none">
